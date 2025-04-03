@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
 
 const AITrainingFeature = () => {
   const { user } = useAuth();
@@ -14,27 +15,49 @@ const AITrainingFeature = () => {
 
   const generateTrainingContent = async () => {
     if (!user) {
-      // If not authenticated, show a message to sign in
-      setTrainingContent("Please sign in to generate training content.");
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to generate training content.",
+        variant: "destructive"
+      });
       return;
     }
 
     setIsLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('gemini-training', {
-        body: { prompt: topic }
+        body: { 
+          prompt: topic,
+          language: "English" // Default language, can be made dynamic
+        }
       });
 
       if (error) throw error;
       
       setTrainingContent(data.content);
+      toast({
+        title: "Training Content Generated",
+        description: "Your personalized training content is ready!",
+      });
     } catch (error) {
       console.error("Error generating training content:", error);
-      setTrainingContent("Sorry, we couldn't generate training content at this time. Please try again later.");
+      toast({
+        title: "Error",
+        description: "Sorry, we couldn't generate training content. Please try again later.",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
   };
+
+  const availableTopics = [
+    "pricing your products",
+    "marketing basics",
+    "financial management",
+    "customer relations",
+    "digital marketing"
+  ];
 
   return (
     <section className="py-16 bg-muted/50">
@@ -52,42 +75,38 @@ const AITrainingFeature = () => {
               Receive personalized business training through voice calls and WhatsApp messages. Learn essential skills at your own pace, in your preferred language.
             </p>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
-              <div className="flex items-start gap-3">
-                <div className="rounded-full p-2 bg-nektech-orange/10">
-                  <Mic className="h-5 w-5 text-nektech-orange" />
-                </div>
-                <div>
-                  <h4 className="font-medium">Voice-Based Learning</h4>
-                  <p className="text-sm text-muted-foreground">No reading required</p>
-                </div>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <label htmlFor="topic" className="text-sm font-medium">Select Training Topic:</label>
+                <select 
+                  id="topic"
+                  value={topic}
+                  onChange={(e) => setTopic(e.target.value)}
+                  className="border rounded px-2 py-1"
+                >
+                  {availableTopics.map((availableTopic) => (
+                    <option key={availableTopic} value={availableTopic}>
+                      {availableTopic}
+                    </option>
+                  ))}
+                </select>
               </div>
-              <div className="flex items-start gap-3">
-                <div className="rounded-full p-2 bg-nektech-orange/10">
-                  <Calendar className="h-5 w-5 text-nektech-orange" />
-                </div>
-                <div>
-                  <h4 className="font-medium">Weekly Updates</h4>
-                  <p className="text-sm text-muted-foreground">Regular business tips</p>
-                </div>
-              </div>
+              
+              <Button 
+                className="btn-primary" 
+                onClick={generateTrainingContent} 
+                disabled={isLoading || !user}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  'Generate Training Content'
+                )}
+              </Button>
             </div>
-            
-            <Button className="btn-primary mt-4" onClick={generateTrainingContent} disabled={isLoading || !user}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                'Generate Training Content'
-              )}
-            </Button>
-            {!user && (
-              <p className="text-sm text-muted-foreground mt-2">
-                Please sign in to generate personalized training content.
-              </p>
-            )}
           </div>
           
           <div className="w-full lg:w-1/2 bg-card rounded-xl border shadow-sm">
@@ -105,36 +124,8 @@ const AITrainingFeature = () => {
                       <h4 className="font-medium">Sample Training Call</h4>
                     </div>
                     <p className="text-sm text-muted-foreground mb-3">
-                      {trainingContent || "Hello Meena, this is your NEKTECH business coach. Today we'll learn about setting the right price for your handcrafted items..."}
+                      {trainingContent || "Your personalized training content will appear here. Select a topic and generate!"}
                     </p>
-                    <div className="flex justify-center">
-                      <Button variant="outline" size="sm">
-                        <div className="w-3 h-3 rounded-full bg-nektech-orange mr-2"></div>
-                        Play Sample
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-muted p-4 rounded-lg">
-                    <h4 className="font-medium mb-2">Topics Covered</h4>
-                    <ul className="text-sm space-y-2">
-                      <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-nektech-orange"></div>
-                        <span>Pricing Strategies</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-nektech-orange"></div>
-                        <span>Marketing Basics</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-nektech-orange"></div>
-                        <span>Customer Relations</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-nektech-orange"></div>
-                        <span>Financial Management</span>
-                      </li>
-                    </ul>
                   </div>
                 </div>
               </TabsContent>
@@ -153,39 +144,11 @@ const AITrainingFeature = () => {
                         <div>
                           <p className="text-xs font-medium text-nektech-blue mb-1">NEKTECH Coach</p>
                           <p className="text-xs bg-blue-50 p-2 rounded-lg">
-                            {trainingContent || "Here's today's business tip: Take clear photos of your products to increase sales. Let me show you how..."}
+                            {trainingContent || "Your personalized WhatsApp training content will appear here. Select a topic and generate!"}
                           </p>
                         </div>
                       </div>
                     </div>
-                    
-                    <div className="flex justify-center">
-                      <Button variant="outline" size="sm">
-                        View Full Tutorial
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-muted p-4 rounded-lg">
-                    <h4 className="font-medium mb-2">WhatsApp Features</h4>
-                    <ul className="text-sm space-y-2">
-                      <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-nektech-orange"></div>
-                        <span>Visual Guides with Images</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-nektech-orange"></div>
-                        <span>Voice Message Instructions</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-nektech-orange"></div>
-                        <span>Interactive Q&A Sessions</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-nektech-orange"></div>
-                        <span>Downloadable Resources</span>
-                      </li>
-                    </ul>
                   </div>
                 </div>
               </TabsContent>
