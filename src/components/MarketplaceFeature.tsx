@@ -5,6 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const MarketplaceFeature = () => {
+  // Sample product images
+  const productImages = [
+    "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=300&h=300",
+    "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=300&h=300",
+    "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=300&h=300",
+    "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?auto=format&fit=crop&w=300&h=300"
+  ];
+  
   return (
     <section className="py-16" id="marketplace">
       <div className="container mx-auto px-4">
@@ -36,8 +44,8 @@ const MarketplaceFeature = () => {
                       <Share2 size={16} className="text-nektech-orange" />
                     </div>
                     <img 
-                      src="/placeholder.svg" 
-                      alt="Product" 
+                      src={productImages[item % productImages.length]} 
+                      alt={`Handcrafted Item ${item}`} 
                       className="w-full h-full object-cover"
                     />
                   </div>

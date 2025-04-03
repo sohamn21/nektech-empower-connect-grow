@@ -1,9 +1,41 @@
 
-import { BookOpen, Mic, MessageCircle, Calendar } from 'lucide-react';
+import { useState } from 'react';
+import { BookOpen, Mic, MessageCircle, Calendar, Loader2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from "@/integrations/supabase/client";
 
 const AITrainingFeature = () => {
+  const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [trainingContent, setTrainingContent] = useState("");
+  const [topic, setTopic] = useState("pricing your products");
+
+  const generateTrainingContent = async () => {
+    if (!user) {
+      // If not authenticated, show a message to sign in
+      setTrainingContent("Please sign in to generate training content.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('gemini-training', {
+        body: { prompt: topic }
+      });
+
+      if (error) throw error;
+      
+      setTrainingContent(data.content);
+    } catch (error) {
+      console.error("Error generating training content:", error);
+      setTrainingContent("Sorry, we couldn't generate training content at this time. Please try again later.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <section className="py-16 bg-muted/50">
       <div className="container mx-auto px-4">
@@ -41,9 +73,21 @@ const AITrainingFeature = () => {
               </div>
             </div>
             
-            <Button className="btn-primary mt-4">
-              Explore Training Content
+            <Button className="btn-primary mt-4" onClick={generateTrainingContent} disabled={isLoading || !user}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                'Generate Training Content'
+              )}
             </Button>
+            {!user && (
+              <p className="text-sm text-muted-foreground mt-2">
+                Please sign in to generate personalized training content.
+              </p>
+            )}
           </div>
           
           <div className="w-full lg:w-1/2 bg-card rounded-xl border shadow-sm">
@@ -61,7 +105,7 @@ const AITrainingFeature = () => {
                       <h4 className="font-medium">Sample Training Call</h4>
                     </div>
                     <p className="text-sm text-muted-foreground mb-3">
-                      "Hello Meena, this is your NEKTECH business coach. Today we'll learn about setting the right price for your handcrafted items..."
+                      {trainingContent || "Hello Meena, this is your NEKTECH business coach. Today we'll learn about setting the right price for your handcrafted items..."}
                     </p>
                     <div className="flex justify-center">
                       <Button variant="outline" size="sm">
@@ -108,7 +152,9 @@ const AITrainingFeature = () => {
                         <div className="w-6 h-6 rounded-full bg-nektech-blue flex-shrink-0"></div>
                         <div>
                           <p className="text-xs font-medium text-nektech-blue mb-1">NEKTECH Coach</p>
-                          <p className="text-xs bg-blue-50 p-2 rounded-lg">Here's today's business tip: Take clear photos of your products to increase sales. Let me show you how...</p>
+                          <p className="text-xs bg-blue-50 p-2 rounded-lg">
+                            {trainingContent || "Here's today's business tip: Take clear photos of your products to increase sales. Let me show you how..."}
+                          </p>
                         </div>
                       </div>
                     </div>

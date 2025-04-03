@@ -2,10 +2,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Menu, X } from 'lucide-react';
+import { Menu, X, User, LogOut } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, signOut } = useAuth();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -17,6 +19,10 @@ const Navbar = () => {
     { name: 'Marketplace', href: '#marketplace' },
     { name: 'Contact', href: '#contact' },
   ];
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
@@ -36,7 +42,23 @@ const Navbar = () => {
               {item.name}
             </a>
           ))}
-          <Button className="btn-primary">Join Us</Button>
+          
+          {user ? (
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" className="flex items-center gap-2">
+                <User size={18} />
+                <span className="hidden lg:inline">{user.email?.split('@')[0]}</span>
+              </Button>
+              <Button variant="outline" className="flex items-center gap-2" onClick={handleSignOut}>
+                <LogOut size={18} />
+                <span className="hidden lg:inline">Sign Out</span>
+              </Button>
+            </div>
+          ) : (
+            <Link to="/auth">
+              <Button className="btn-primary">Sign In</Button>
+            </Link>
+          )}
         </nav>
 
         {/* Mobile Menu Button */}
@@ -63,7 +85,21 @@ const Navbar = () => {
                 {item.name}
               </a>
             ))}
-            <Button className="btn-primary w-full">Join Us</Button>
+            {user ? (
+              <>
+                <div className="flex items-center gap-2 py-2">
+                  <User size={18} className="text-nektech-blue" />
+                  <span>{user.email}</span>
+                </div>
+                <Button className="w-full" variant="outline" onClick={handleSignOut}>
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
+                <Button className="btn-primary w-full">Sign In</Button>
+              </Link>
+            )}
           </div>
         </div>
       )}
