@@ -92,6 +92,7 @@ const HubsMap = () => {
 
   // Calculate center of India
   const indiaCenter: [number, number] = [23.5937, 78.9629];
+  const customIcon = createCustomIcon();
 
   return (
     <MapContainer 
@@ -108,8 +109,7 @@ const HubsMap = () => {
       {hubLocations.map(hub => (
         <Marker 
           key={hub.id} 
-          position={hub.coordinates}
-          icon={createCustomIcon()}
+          position={hub.coordinates as L.LatLngExpression}
         >
           <Popup>
             <div className="p-1">
