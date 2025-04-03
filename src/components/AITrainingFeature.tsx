@@ -6,8 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
+import { useTranslation } from 'react-i18next';
 
 const AITrainingFeature = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [trainingContent, setTrainingContent] = useState("");
@@ -16,8 +18,8 @@ const AITrainingFeature = () => {
   const generateTrainingContent = async () => {
     if (!user) {
       toast({
-        title: "Authentication Required",
-        description: "Please sign in to generate training content.",
+        title: t('aiTraining.authRequired.title'),
+        description: t('aiTraining.authRequired.description'),
         variant: "destructive"
       });
       return;
@@ -36,14 +38,14 @@ const AITrainingFeature = () => {
       
       setTrainingContent(data.content);
       toast({
-        title: "Training Content Generated",
-        description: "Your personalized training content is ready!",
+        title: t('aiTraining.contentGenerated.title'),
+        description: t('aiTraining.contentGenerated.description'),
       });
     } catch (error) {
       console.error("Error generating training content:", error);
       toast({
-        title: "Error",
-        description: "Sorry, we couldn't generate training content. Please try again later.",
+        title: t('aiTraining.error.title'),
+        description: t('aiTraining.error.description'),
         variant: "destructive"
       });
     } finally {
@@ -66,18 +68,18 @@ const AITrainingFeature = () => {
           <div className="w-full lg:w-1/2 space-y-6">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-nektech-orange/10 text-nektech-orange font-medium text-sm">
               <BookOpen size={16} />
-              <span>Business Knowledge</span>
+              <span>{t('aiTraining.badge')}</span>
             </div>
             <h2 className="text-3xl md:text-4xl font-display font-bold">
-              AI-Powered Training
+              {t('aiTraining.title')}
             </h2>
             <p className="text-lg text-muted-foreground">
-              Receive personalized business training through voice calls and WhatsApp messages. Learn essential skills at your own pace, in your preferred language.
+              {t('aiTraining.description')}
             </p>
             
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <label htmlFor="topic" className="text-sm font-medium">Select Training Topic:</label>
+                <label htmlFor="topic" className="text-sm font-medium">{t('aiTraining.selectTopic')}:</label>
                 <select 
                   id="topic"
                   value={topic}
@@ -86,7 +88,7 @@ const AITrainingFeature = () => {
                 >
                   {availableTopics.map((availableTopic) => (
                     <option key={availableTopic} value={availableTopic}>
-                      {availableTopic}
+                      {t(`aiTraining.topics.${availableTopic.replace(/\s/g, '')}`)}
                     </option>
                   ))}
                 </select>
@@ -100,10 +102,10 @@ const AITrainingFeature = () => {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating...
+                    {t('aiTraining.generating')}
                   </>
                 ) : (
-                  'Generate Training Content'
+                  t('aiTraining.generateButton')
                 )}
               </Button>
             </div>
@@ -112,8 +114,8 @@ const AITrainingFeature = () => {
           <div className="w-full lg:w-1/2 bg-card rounded-xl border shadow-sm">
             <Tabs defaultValue="ivr" className="w-full">
               <TabsList className="grid grid-cols-2 w-full">
-                <TabsTrigger value="ivr">IVR Training</TabsTrigger>
-                <TabsTrigger value="whatsapp">WhatsApp Training</TabsTrigger>
+                <TabsTrigger value="ivr">{t('aiTraining.tabs.ivr')}</TabsTrigger>
+                <TabsTrigger value="whatsapp">{t('aiTraining.tabs.whatsapp')}</TabsTrigger>
               </TabsList>
               
               <TabsContent value="ivr" className="p-6">
@@ -121,10 +123,10 @@ const AITrainingFeature = () => {
                   <div className="bg-muted p-4 rounded-lg">
                     <div className="flex items-center gap-3 mb-2">
                       <Mic className="h-4 w-4 text-nektech-orange" />
-                      <h4 className="font-medium">Sample Training Call</h4>
+                      <h4 className="font-medium">{t('aiTraining.ivr.title')}</h4>
                     </div>
                     <p className="text-sm text-muted-foreground mb-3">
-                      {trainingContent || "Your personalized training content will appear here. Select a topic and generate!"}
+                      {trainingContent || t('aiTraining.ivr.placeholder')}
                     </p>
                   </div>
                 </div>
@@ -135,16 +137,16 @@ const AITrainingFeature = () => {
                   <div className="bg-muted p-4 rounded-lg">
                     <div className="flex items-center gap-3 mb-2">
                       <MessageCircle className="h-4 w-4 text-nektech-orange" />
-                      <h4 className="font-medium">WhatsApp Tutorial</h4>
+                      <h4 className="font-medium">{t('aiTraining.whatsapp.title')}</h4>
                     </div>
                     
                     <div className="bg-background p-3 rounded-lg mb-3">
                       <div className="flex items-start gap-2">
                         <div className="w-6 h-6 rounded-full bg-nektech-blue flex-shrink-0"></div>
                         <div>
-                          <p className="text-xs font-medium text-nektech-blue mb-1">NEKTECH Coach</p>
+                          <p className="text-xs font-medium text-nektech-blue mb-1">{t('aiTraining.whatsapp.coach')}</p>
                           <p className="text-xs bg-blue-50 p-2 rounded-lg">
-                            {trainingContent || "Your personalized WhatsApp training content will appear here. Select a topic and generate!"}
+                            {trainingContent || t('aiTraining.whatsapp.placeholder')}
                           </p>
                         </div>
                       </div>

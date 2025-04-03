@@ -2,8 +2,11 @@
 import { Facebook, Instagram, Twitter, Linkedin, Mail, PhoneCall, MapPin } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useTranslation } from 'react-i18next';
 
 const Footer = () => {
+  const { t } = useTranslation();
+  
   return (
     <footer id="contact" className="bg-nektech-dark text-white">
       <div className="container mx-auto px-4 py-12">
@@ -13,7 +16,7 @@ const Footer = () => {
               <span className="font-display font-bold text-2xl text-white">NEK<span className="text-nektech-orange">TECH</span></span>
             </div>
             <p className="text-gray-400 mb-4">
-              Empowering rural women entrepreneurs through technology that works for everyone.
+              {t('footer.tagline')}
             </p>
             <div className="flex space-x-4">
               <a href="#" className="text-gray-400 hover:text-white transition-colors">
@@ -32,57 +35,57 @@ const Footer = () => {
           </div>
           
           <div className="md:col-span-1 lg:col-span-1">
-            <h3 className="font-medium text-lg mb-4">Quick Links</h3>
+            <h3 className="font-medium text-lg mb-4">{t('footer.quickLinks.title')}</h3>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">About Us</a>
+                <a href="#" className="text-gray-400 hover:text-white transition-colors">{t('footer.quickLinks.aboutUs')}</a>
               </li>
               <li>
-                <a href="#features" className="text-gray-400 hover:text-white transition-colors">Features</a>
+                <a href="#features" className="text-gray-400 hover:text-white transition-colors">{t('footer.quickLinks.features')}</a>
               </li>
               <li>
-                <a href="#marketplace" className="text-gray-400 hover:text-white transition-colors">Marketplace</a>
+                <a href="#marketplace" className="text-gray-400 hover:text-white transition-colors">{t('footer.quickLinks.marketplace')}</a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">Success Stories</a>
+                <a href="#" className="text-gray-400 hover:text-white transition-colors">{t('footer.quickLinks.successStories')}</a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">Join NEKTECH</a>
+                <a href="#" className="text-gray-400 hover:text-white transition-colors">{t('footer.quickLinks.joinNektech')}</a>
               </li>
             </ul>
           </div>
           
           <div className="md:col-span-1 lg:col-span-1">
-            <h3 className="font-medium text-lg mb-4">Contact Us</h3>
+            <h3 className="font-medium text-lg mb-4">{t('footer.contactUs.title')}</h3>
             <ul className="space-y-3">
               <li className="flex items-start space-x-3">
                 <PhoneCall size={18} className="text-nektech-orange flex-shrink-0 mt-1" />
-                <span className="text-gray-400">+91 123-456-7890</span>
+                <span className="text-gray-400">{t('footer.contactUs.phone')}</span>
               </li>
               <li className="flex items-start space-x-3">
                 <Mail size={18} className="text-nektech-orange flex-shrink-0 mt-1" />
-                <span className="text-gray-400">contact@nektech.org</span>
+                <span className="text-gray-400">{t('footer.contactUs.email')}</span>
               </li>
               <li className="flex items-start space-x-3">
                 <MapPin size={18} className="text-nektech-orange flex-shrink-0 mt-1" />
-                <span className="text-gray-400">123 Innovation Hub, Delhi, India</span>
+                <span className="text-gray-400">{t('footer.contactUs.address')}</span>
               </li>
             </ul>
           </div>
           
           <div className="md:col-span-3 lg:col-span-1">
-            <h3 className="font-medium text-lg mb-4">Newsletter</h3>
+            <h3 className="font-medium text-lg mb-4">{t('footer.newsletter.title')}</h3>
             <p className="text-gray-400 mb-4">
-              Subscribe to our newsletter for updates on our initiatives and success stories.
+              {t('footer.newsletter.description')}
             </p>
             <div className="flex space-x-2">
               <Input 
                 type="email" 
-                placeholder="Your email" 
+                placeholder={t('footer.newsletter.placeholder')}
                 className="bg-nektech-dark border-gray-700 text-white"
               />
               <Button className="btn-primary">
-                Subscribe
+                {t('footer.newsletter.button')}
               </Button>
             </div>
           </div>
@@ -91,19 +94,19 @@ const Footer = () => {
         <div className="mt-12 pt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between">
             <p className="text-gray-400 text-sm">
-              &copy; {new Date().getFullYear()} NEKTECH. All rights reserved.
+              &copy; {new Date().getFullYear()} NEKTECH. {t('footer.copyright')}
             </p>
             <div className="mt-4 md:mt-0">
-              <h4 className="text-sm font-medium mb-2">NGO Partners</h4>
+              <h4 className="text-sm font-medium mb-2">{t('footer.partners.title')}</h4>
               <div className="flex space-x-4">
                 <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Digital Empowerment Foundation
+                  {t('footer.partners.digitalEmpowerment')}
                 </a>
                 <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  SEWA Foundation
+                  {t('footer.partners.sewaFoundation')}
                 </a>
                 <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Grameen Foundation
+                  {t('footer.partners.grameenFoundation')}
                 </a>
               </div>
             </div>

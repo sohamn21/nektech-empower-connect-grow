@@ -1,29 +1,32 @@
 
 import { Landmark, ShieldCheck, RefreshCw, CreditCard } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { useTranslation } from 'react-i18next';
 
 const BlockchainFeature = () => {
+  const { t } = useTranslation();
+  
   return (
     <section className="py-16">
       <div className="container mx-auto px-4">
         <div className="flex flex-col-reverse lg:flex-row items-center gap-12">
           <div className="w-full lg:w-1/2 bg-card rounded-xl border shadow-sm p-6">
             <div className="mb-6 text-center">
-              <h3 className="text-xl font-medium">Payment Demo</h3>
-              <p className="text-sm text-muted-foreground">See how secure transactions work</p>
+              <h3 className="text-xl font-medium">{t('blockchainFeature.demo.title')}</h3>
+              <p className="text-sm text-muted-foreground">{t('blockchainFeature.demo.subtitle')}</p>
             </div>
             
             <div className="bg-muted p-6 rounded-lg space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-background p-4 rounded-lg text-center">
-                  <p className="text-sm text-muted-foreground mb-1">Transaction Fee</p>
-                  <p className="text-xl font-medium text-nektech-blue">0.1%</p>
-                  <p className="text-xs text-muted-foreground">vs 2-3% traditional</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t('blockchainFeature.demo.transactionFee.label')}</p>
+                  <p className="text-xl font-medium text-nektech-blue">{t('blockchainFeature.demo.transactionFee.value')}</p>
+                  <p className="text-xs text-muted-foreground">{t('blockchainFeature.demo.transactionFee.comparison')}</p>
                 </div>
                 <div className="bg-background p-4 rounded-lg text-center">
-                  <p className="text-sm text-muted-foreground mb-1">Settlement Time</p>
-                  <p className="text-xl font-medium text-nektech-blue">Minutes</p>
-                  <p className="text-xs text-muted-foreground">vs 3-5 days traditional</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t('blockchainFeature.demo.settlementTime.label')}</p>
+                  <p className="text-xl font-medium text-nektech-blue">{t('blockchainFeature.demo.settlementTime.value')}</p>
+                  <p className="text-xs text-muted-foreground">{t('blockchainFeature.demo.settlementTime.comparison')}</p>
                 </div>
               </div>
               
@@ -34,24 +37,24 @@ const BlockchainFeature = () => {
                   <div className="absolute left-0 top-1 w-8 h-8 rounded-full bg-nektech-blue text-white flex items-center justify-center">
                     <ShieldCheck size={16} />
                   </div>
-                  <h4 className="font-medium">Secure Transaction</h4>
-                  <p className="text-sm text-muted-foreground">Customer payment is securely processed on blockchain</p>
+                  <h4 className="font-medium">{t('blockchainFeature.demo.secureTransaction.title')}</h4>
+                  <p className="text-sm text-muted-foreground">{t('blockchainFeature.demo.secureTransaction.description')}</p>
                 </div>
                 
                 <div className="relative pl-10 pb-6">
                   <div className="absolute left-0 top-1 w-8 h-8 rounded-full bg-nektech-blue text-white flex items-center justify-center">
                     <RefreshCw size={16} />
                   </div>
-                  <h4 className="font-medium">Instant Verification</h4>
-                  <p className="text-sm text-muted-foreground">Both parties receive confirmation</p>
+                  <h4 className="font-medium">{t('blockchainFeature.demo.instantVerification.title')}</h4>
+                  <p className="text-sm text-muted-foreground">{t('blockchainFeature.demo.instantVerification.description')}</p>
                 </div>
                 
                 <div className="relative pl-10">
                   <div className="absolute left-0 top-1 w-8 h-8 rounded-full bg-nektech-blue text-white flex items-center justify-center">
                     <CreditCard size={16} />
                   </div>
-                  <h4 className="font-medium">Easy Withdrawal</h4>
-                  <p className="text-sm text-muted-foreground">Visit any NEKTECH hub to collect cash</p>
+                  <h4 className="font-medium">{t('blockchainFeature.demo.easyWithdrawal.title')}</h4>
+                  <p className="text-sm text-muted-foreground">{t('blockchainFeature.demo.easyWithdrawal.description')}</p>
                 </div>
               </div>
             </div>
@@ -60,28 +63,28 @@ const BlockchainFeature = () => {
           <div className="w-full lg:w-1/2 space-y-6">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-nektech-blue/10 text-nektech-blue font-medium text-sm">
               <Landmark size={16} />
-              <span>Secure Finances</span>
+              <span>{t('blockchainFeature.badge')}</span>
             </div>
             <h2 className="text-3xl md:text-4xl font-display font-bold">
-              Blockchain-Powered Payments
+              {t('blockchainFeature.title')}
             </h2>
             <p className="text-lg text-muted-foreground">
-              Our blockchain technology ensures your transactions are secure, transparent, and affordable. No middlemen means more profit stays in your pocket.
+              {t('blockchainFeature.description')}
             </p>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
               <div className="p-4 border rounded-lg">
-                <h4 className="font-medium mb-2">No Hidden Fees</h4>
-                <p className="text-sm text-muted-foreground">Transparent pricing with minimal transaction costs</p>
+                <h4 className="font-medium mb-2">{t('blockchainFeature.noHiddenFees.title')}</h4>
+                <p className="text-sm text-muted-foreground">{t('blockchainFeature.noHiddenFees.description')}</p>
               </div>
               <div className="p-4 border rounded-lg">
-                <h4 className="font-medium mb-2">Easy Cash Withdrawal</h4>
-                <p className="text-sm text-muted-foreground">Visit any NEKTECH hub in your community</p>
+                <h4 className="font-medium mb-2">{t('blockchainFeature.easyWithdrawal.title')}</h4>
+                <p className="text-sm text-muted-foreground">{t('blockchainFeature.easyWithdrawal.description')}</p>
               </div>
             </div>
             
             <Button className="btn-secondary mt-4">
-              Learn About Blockchain
+              {t('blockchainFeature.learnMore')}
             </Button>
           </div>
         </div>

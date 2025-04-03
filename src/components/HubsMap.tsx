@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import { useEffect, useState } from 'react';
 import { MapPin } from 'lucide-react';
 import L from 'leaflet';
+import { useTranslation } from 'react-i18next';
 
 // Define hub location data type
 interface HubLocation {
@@ -29,54 +30,81 @@ const createCustomIcon = () => {
 };
 
 const HubsMap = () => {
+  const { t } = useTranslation();
+  
   const [hubLocations, setHubLocations] = useState<HubLocation[]>([
     {
       id: 1,
-      name: "Delhi Hub",
-      type: "Main Center",
+      name: t('hubsMap.locations.delhi.name'),
+      type: t('hubsMap.locations.delhi.type'),
       coordinates: [28.7041, 77.1025],
-      services: ["Payments", "Training", "Product Photography", "Shipping"],
-      hours: "Mon-Sat: 9am-5pm"
+      services: [
+        t('hubsMap.services.payments'), 
+        t('hubsMap.services.training'), 
+        t('hubsMap.services.photography'), 
+        t('hubsMap.services.shipping')
+      ],
+      hours: t('hubsMap.hours.fullDay')
     },
     {
       id: 2,
-      name: "Mumbai Hub",
-      type: "Community Center",
+      name: t('hubsMap.locations.mumbai.name'),
+      type: t('hubsMap.locations.general.communityCenter'),
       coordinates: [19.0760, 72.8777],
-      services: ["Payments", "Training", "Shipping"],
-      hours: "Mon-Sat: 9am-5pm"
+      services: [
+        t('hubsMap.services.payments'), 
+        t('hubsMap.services.training'), 
+        t('hubsMap.services.shipping')
+      ],
+      hours: t('hubsMap.hours.fullDay')
     },
     {
       id: 3,
-      name: "Jaipur Hub",
-      type: "Community Center",
+      name: t('hubsMap.locations.jaipur.name'),
+      type: t('hubsMap.locations.general.communityCenter'),
       coordinates: [26.9124, 75.7873],
-      services: ["Training", "Product Photography", "Shipping"],
-      hours: "Mon-Sat: 9am-5pm"
+      services: [
+        t('hubsMap.services.training'), 
+        t('hubsMap.services.photography'), 
+        t('hubsMap.services.shipping')
+      ],
+      hours: t('hubsMap.hours.fullDay')
     },
     {
       id: 4,
-      name: "Lucknow Hub",
-      type: "Community Center",
+      name: t('hubsMap.locations.lucknow.name'),
+      type: t('hubsMap.locations.general.communityCenter'),
       coordinates: [26.8467, 80.9462],
-      services: ["Payments", "Training", "Shipping"],
-      hours: "Mon-Sat: 10am-4pm"
+      services: [
+        t('hubsMap.services.payments'), 
+        t('hubsMap.services.training'), 
+        t('hubsMap.services.shipping')
+      ],
+      hours: t('hubsMap.hours.reducedDay')
     },
     {
       id: 5,
-      name: "Bangalore Hub",
-      type: "Community Center",
+      name: t('hubsMap.locations.bangalore.name'),
+      type: t('hubsMap.locations.general.communityCenter'),
       coordinates: [12.9716, 77.5946],
-      services: ["Payments", "Training", "Product Photography", "Shipping"],
-      hours: "Mon-Sat: 9am-5pm"
+      services: [
+        t('hubsMap.services.payments'), 
+        t('hubsMap.services.training'), 
+        t('hubsMap.services.photography'), 
+        t('hubsMap.services.shipping')
+      ],
+      hours: t('hubsMap.hours.fullDay')
     },
     {
       id: 6,
-      name: "Chennai Hub",
-      type: "Community Center",
+      name: t('hubsMap.locations.chennai.name'),
+      type: t('hubsMap.locations.general.communityCenter'),
       coordinates: [13.0827, 80.2707],
-      services: ["Training", "Shipping"],
-      hours: "Mon-Sat: 9am-5pm"
+      services: [
+        t('hubsMap.services.training'), 
+        t('hubsMap.services.shipping')
+      ],
+      hours: t('hubsMap.hours.fullDay')
     }
   ]);
 
@@ -115,7 +143,7 @@ const HubsMap = () => {
             <div className="p-1">
               <h3 className="font-medium">{hub.name}</h3>
               <p className="text-xs text-muted-foreground">{hub.type}</p>
-              <p className="text-xs mt-2">Services: {hub.services.join(", ")}</p>
+              <p className="text-xs mt-2">{t('hubsMap.popup.services')}: {hub.services.join(", ")}</p>
               <p className="text-xs mt-1">{hub.hours}</p>
             </div>
           </Popup>

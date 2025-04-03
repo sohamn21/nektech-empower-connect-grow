@@ -8,6 +8,135 @@
     "signIn": "Sign In",
     "signOut": "Sign Out"
   },
+  "hero": {
+    "title": "One Missed Call to Transform a Life",
+    "subtitle": "Empowering rural women entrepreneurs through technology that works without smartphones or internet. Building communities and changing lives.",
+    "getStarted": "Get Started",
+    "learnMore": "Learn More",
+    "imageAlt": "Rural women entrepreneurs"
+  },
+  "features": {
+    "sectionTitle": "Our Features",
+    "sectionSubtitle": "Technology that empowers, connects, and grows with you.",
+    "missedCall": {
+      "title": "Missed Call Registration",
+      "description": "Register your business with just one missed call. Our AI-powered IVR system guides you through simple steps in English and Hindi."
+    },
+    "blockchain": {
+      "title": "Blockchain Payments",
+      "description": "Secure, transparent transactions without middlemen. Withdraw earnings easily at any NEKTECH hub in your community."
+    },
+    "aiTraining": {
+      "title": "AI-powered Training",
+      "description": "Receive weekly business tips and training via voice calls and WhatsApp messages. Learn and grow at your own pace."
+    },
+    "marketplace": {
+      "title": "Marketplace Access",
+      "description": "Sell your products globally through our marketplace. We connect you to platforms like Amazon Saheli and Flipkart Samarth."
+    }
+  },
+  "missedCallFeature": {
+    "badge": "Simple Registration",
+    "title": "One Missed Call is All You Need",
+    "description": "Our AI-powered Interactive Voice Response (IVR) system makes business registration accessible to anyone with a basic phone. No smartphone or internet required.",
+    "voiceGuidance": {
+      "title": "Voice Guidance",
+      "description": "Step-by-step instructions in your language"
+    },
+    "multipleLanguages": {
+      "title": "Multiple Languages",
+      "description": "Currently in English and Hindi"
+    },
+    "tryDemo": "Try Demo Registration",
+    "demo": {
+      "title": "IVR Registration Demo",
+      "subtitle": "Experience our registration process",
+      "step1": "Give a missed call to 080-1234-5678",
+      "step2": "We call back and ask: \"Press 1 for English, 2 for Hindi\"",
+      "step3": "Enter your basic information using phone keypad",
+      "step4": "Your business is registered! You'll receive a confirmation call."
+    }
+  },
+  "blockchainFeature": {
+    "badge": "Secure Finances",
+    "title": "Blockchain-Powered Payments",
+    "description": "Our blockchain technology ensures your transactions are secure, transparent, and affordable. No middlemen means more profit stays in your pocket.",
+    "noHiddenFees": {
+      "title": "No Hidden Fees",
+      "description": "Transparent pricing with minimal transaction costs"
+    },
+    "easyWithdrawal": {
+      "title": "Easy Cash Withdrawal",
+      "description": "Visit any NEKTECH hub in your community"
+    },
+    "learnMore": "Learn About Blockchain",
+    "demo": {
+      "title": "Payment Demo",
+      "subtitle": "See how secure transactions work",
+      "transactionFee": {
+        "label": "Transaction Fee",
+        "value": "0.1%",
+        "comparison": "vs 2-3% traditional"
+      },
+      "settlementTime": {
+        "label": "Settlement Time",
+        "value": "Minutes",
+        "comparison": "vs 3-5 days traditional"
+      },
+      "secureTransaction": {
+        "title": "Secure Transaction",
+        "description": "Customer payment is securely processed on blockchain"
+      },
+      "instantVerification": {
+        "title": "Instant Verification",
+        "description": "Both parties receive confirmation"
+      },
+      "easyWithdrawal": {
+        "title": "Easy Withdrawal",
+        "description": "Visit any NEKTECH hub to collect cash"
+      }
+    }
+  },
+  "aiTraining": {
+    "badge": "Business Knowledge",
+    "title": "AI-Powered Training",
+    "description": "Receive personalized business training through voice calls and WhatsApp messages. Learn essential skills at your own pace, in your preferred language.",
+    "selectTopic": "Select Training Topic",
+    "generateButton": "Generate Training Content",
+    "generating": "Generating...",
+    "topics": {
+      "pricingproducts": "Pricing your products",
+      "marketingbasics": "Marketing basics",
+      "financialmanagement": "Financial management",
+      "customerrelations": "Customer relations",
+      "digitalmarketing": "Digital marketing"
+    },
+    "tabs": {
+      "ivr": "IVR Training",
+      "whatsapp": "WhatsApp Training"
+    },
+    "ivr": {
+      "title": "Sample Training Call",
+      "placeholder": "Your personalized training content will appear here. Select a topic and generate!"
+    },
+    "whatsapp": {
+      "title": "WhatsApp Tutorial",
+      "coach": "NEKTECH Coach",
+      "placeholder": "Your personalized WhatsApp training content will appear here. Select a topic and generate!"
+    },
+    "authRequired": {
+      "title": "Authentication Required",
+      "description": "Please sign in to generate training content."
+    },
+    "contentGenerated": {
+      "title": "Training Content Generated",
+      "description": "Your personalized training content is ready!"
+    },
+    "error": {
+      "title": "Error",
+      "description": "Sorry, we couldn't generate training content. Please try again later."
+    }
+  },
   "marketplace": {
     "title": "NEKTECH Marketplace",
     "subtitle": "Connect with customers worldwide and access major e-commerce platforms through our marketplace and community hubs.",
@@ -29,7 +158,116 @@
       "direct": "Direct Marketplace"
     }
   },
+  "hubsMap": {
+    "locations": {
+      "delhi": {
+        "name": "Delhi Hub",
+        "type": "Main Center"
+      },
+      "mumbai": {
+        "name": "Mumbai Hub"
+      },
+      "jaipur": {
+        "name": "Jaipur Hub"
+      },
+      "lucknow": {
+        "name": "Lucknow Hub"
+      },
+      "bangalore": {
+        "name": "Bangalore Hub"
+      },
+      "chennai": {
+        "name": "Chennai Hub"
+      },
+      "general": {
+        "communityCenter": "Community Center"
+      }
+    },
+    "services": {
+      "payments": "Payments",
+      "training": "Training",
+      "photography": "Product Photography",
+      "shipping": "Shipping"
+    },
+    "hours": {
+      "fullDay": "Mon-Sat: 9am-5pm",
+      "reducedDay": "Mon-Sat: 10am-4pm"
+    },
+    "popup": {
+      "services": "Services"
+    }
+  },
   "languageSelector": {
     "label": "Language"
+  },
+  "footer": {
+    "tagline": "Empowering rural women entrepreneurs through technology that works for everyone.",
+    "quickLinks": {
+      "title": "Quick Links",
+      "aboutUs": "About Us",
+      "features": "Features",
+      "marketplace": "Marketplace",
+      "successStories": "Success Stories",
+      "joinNektech": "Join NEKTECH"
+    },
+    "contactUs": {
+      "title": "Contact Us",
+      "phone": "+91 123-456-7890",
+      "email": "contact@nektech.org",
+      "address": "123 Innovation Hub, Delhi, India"
+    },
+    "newsletter": {
+      "title": "Newsletter",
+      "description": "Subscribe to our newsletter for updates on our initiatives and success stories.",
+      "placeholder": "Your email",
+      "button": "Subscribe"
+    },
+    "copyright": "All rights reserved.",
+    "partners": {
+      "title": "NGO Partners",
+      "digitalEmpowerment": "Digital Empowerment Foundation",
+      "sewaFoundation": "SEWA Foundation",
+      "grameenFoundation": "Grameen Foundation"
+    }
+  },
+  "auth": {
+    "validation": {
+      "email": "Please enter a valid email address",
+      "password": "Password must be at least 6 characters"
+    },
+    "login": {
+      "title": "Welcome Back",
+      "subtitle": "Sign in to access your NEKTECH account",
+      "success": {
+        "title": "Welcome back!",
+        "description": "You have successfully logged in."
+      }
+    },
+    "signup": {
+      "title": "Create Account",
+      "subtitle": "Join the NEKTECH platform for rural entrepreneurs",
+      "success": {
+        "title": "Account created!",
+        "description": "Check your email for the confirmation link."
+      }
+    },
+    "error": {
+      "title": "Authentication error"
+    },
+    "form": {
+      "email": "Email",
+      "emailPlaceholder": "Your email",
+      "password": "Password",
+      "passwordPlaceholder": "Your password",
+      "processing": "Processing...",
+      "signIn": "Sign In",
+      "signUp": "Sign Up"
+    },
+    "switchToSignup": "Need an account? Sign up",
+    "switchToLogin": "Have an account? Sign in"
+  },
+  "notFound": {
+    "message": "Oops! Page not found",
+    "returnHome": "Return to Home"
   }
 }

@@ -4,19 +4,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-const formSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
-});
+import { useTranslation } from 'react-i18next';
 
 const Auth = () => {
+  const { t } = useTranslation();
+  
+  const formSchema = z.object({
+    email: z.string().email({ message: t('auth.validation.email') }),
+    password: z.string().min(6, { message: t('auth.validation.password') }),
+  });
+
   const [isLoading, setIsLoading] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
   const navigate = useNavigate();
@@ -42,8 +44,8 @@ const Auth = () => {
         if (error) throw error;
 
         toast({
-          title: "Account created!",
-          description: "Check your email for the confirmation link.",
+          title: t('auth.signup.success.title'),
+          description: t('auth.signup.success.description'),
         });
 
         // Switch to login mode after signup
@@ -57,8 +59,8 @@ const Auth = () => {
         if (error) throw error;
 
         toast({
-          title: "Welcome back!",
-          description: "You have successfully logged in.",
+          title: t('auth.login.success.title'),
+          description: t('auth.login.success.description'),
         });
 
         navigate("/");
@@ -66,7 +68,7 @@ const Auth = () => {
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Authentication error",
+        title: t('auth.error.title'),
         description: error.message,
       });
     } finally {
@@ -79,12 +81,12 @@ const Auth = () => {
       <div className="w-full max-w-md space-y-8 p-8 bg-background rounded-xl shadow-lg">
         <div className="text-center">
           <h1 className="text-3xl font-bold">
-            {authMode === "login" ? "Welcome Back" : "Create Account"}
+            {authMode === "login" ? t('auth.login.title') : t('auth.signup.title')}
           </h1>
           <p className="mt-2 text-muted-foreground">
             {authMode === "login"
-              ? "Sign in to access your NEKTECH account"
-              : "Join the NEKTECH platform for rural entrepreneurs"}
+              ? t('auth.login.subtitle')
+              : t('auth.signup.subtitle')}
           </p>
         </div>
 
@@ -95,10 +97,10 @@ const Auth = () => {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>{t('auth.form.email')}</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="Your email" 
+                      placeholder={t('auth.form.emailPlaceholder')}
                       type="email"
                       {...field}
                       disabled={isLoading}
@@ -114,10 +116,10 @@ const Auth = () => {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>{t('auth.form.password')}</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="Your password" 
+                      placeholder={t('auth.form.passwordPlaceholder')}
                       type="password"
                       {...field}
                       disabled={isLoading}
@@ -129,7 +131,7 @@ const Auth = () => {
             />
 
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Processing..." : authMode === "login" ? "Sign In" : "Sign Up"}
+              {isLoading ? t('auth.form.processing') : authMode === "login" ? t('auth.form.signIn') : t('auth.form.signUp')}
             </Button>
           </form>
         </Form>
@@ -139,7 +141,7 @@ const Auth = () => {
             variant="link"
             onClick={() => setAuthMode(authMode === "login" ? "signup" : "login")}
           >
-            {authMode === "login" ? "Need an account? Sign up" : "Have an account? Sign in"}
+            {authMode === "login" ? t('auth.switchToSignup') : t('auth.switchToLogin')}
           </Button>
         </div>
       </div>
