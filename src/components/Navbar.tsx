@@ -4,20 +4,23 @@ import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Menu, X, User, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
+import LanguageSelector from './LanguageSelector';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
+  const { t } = useTranslation();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
   const navItems = [
-    { name: 'Home', href: '/' },
-    { name: 'Features', href: '#features' },
-    { name: 'Marketplace', href: '#marketplace' },
-    { name: 'Contact', href: '#contact' },
+    { name: t('navbar.home'), href: '/' },
+    { name: t('navbar.features'), href: '#features' },
+    { name: t('navbar.marketplace'), href: '#marketplace' },
+    { name: t('navbar.contact'), href: '#contact' },
   ];
 
   const handleSignOut = async () => {
@@ -32,7 +35,7 @@ const Navbar = () => {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-8">
+        <nav className="hidden md:flex items-center space-x-4 lg:space-x-8">
           {navItems.map((item) => (
             <a
               key={item.name}
@@ -43,6 +46,8 @@ const Navbar = () => {
             </a>
           ))}
           
+          <LanguageSelector />
+          
           {user ? (
             <div className="flex items-center gap-2">
               <Button variant="ghost" className="flex items-center gap-2">
@@ -51,24 +56,27 @@ const Navbar = () => {
               </Button>
               <Button variant="outline" className="flex items-center gap-2" onClick={handleSignOut}>
                 <LogOut size={18} />
-                <span className="hidden lg:inline">Sign Out</span>
+                <span className="hidden lg:inline">{t('navbar.signOut')}</span>
               </Button>
             </div>
           ) : (
             <Link to="/auth">
-              <Button className="btn-primary">Sign In</Button>
+              <Button className="btn-primary">{t('navbar.signIn')}</Button>
             </Link>
           )}
         </nav>
 
         {/* Mobile Menu Button */}
-        <button
-          className="md:hidden p-2 rounded-md text-foreground"
-          onClick={toggleMenu}
-          aria-label="Toggle menu"
-        >
-          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        <div className="md:hidden flex items-center gap-2">
+          <LanguageSelector />
+          <button
+            className="p-2 rounded-md text-foreground"
+            onClick={toggleMenu}
+            aria-label="Toggle menu"
+          >
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Navigation */}
@@ -92,12 +100,12 @@ const Navbar = () => {
                   <span>{user.email}</span>
                 </div>
                 <Button className="w-full" variant="outline" onClick={handleSignOut}>
-                  Sign Out
+                  {t('navbar.signOut')}
                 </Button>
               </>
             ) : (
               <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
-                <Button className="btn-primary w-full">Sign In</Button>
+                <Button className="btn-primary w-full">{t('navbar.signIn')}</Button>
               </Link>
             )}
           </div>

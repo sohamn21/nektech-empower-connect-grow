@@ -3,8 +3,12 @@ import { ShoppingBag, MapPin, Share2, ExternalLink } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTranslation } from 'react-i18next';
+import HubsMap from './HubsMap';
 
 const MarketplaceFeature = () => {
+  const { t } = useTranslation();
+  
   // Sample product images
   const productImages = [
     "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=300&h=300",
@@ -22,17 +26,17 @@ const MarketplaceFeature = () => {
             <span>Global Reach</span>
           </div>
           <h2 className="text-3xl md:text-4xl font-display font-bold mt-4">
-            NEKTECH Marketplace
+            {t('marketplace.title')}
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mt-4">
-            Connect with customers worldwide and access major e-commerce platforms through our marketplace and community hubs.
+            {t('marketplace.subtitle')}
           </p>
         </div>
         
         <Tabs defaultValue="products" className="w-full">
           <TabsList className="grid grid-cols-2 w-full max-w-md mx-auto">
-            <TabsTrigger value="products">Products</TabsTrigger>
-            <TabsTrigger value="hubs">NEKTECH Hubs</TabsTrigger>
+            <TabsTrigger value="products">{t('marketplace.tabs.products')}</TabsTrigger>
+            <TabsTrigger value="hubs">{t('marketplace.tabs.hubs')}</TabsTrigger>
           </TabsList>
           
           <TabsContent value="products" className="mt-8">
@@ -60,29 +64,24 @@ const MarketplaceFeature = () => {
                         <span>Rajasthan</span>
                       </div>
                     </div>
-                    <Button className="w-full mt-4 btn-primary" size="sm">View Details</Button>
+                    <Button className="w-full mt-4 btn-primary" size="sm">
+                      {t('marketplace.product.viewDetails')}
+                    </Button>
                   </CardContent>
                 </Card>
               ))}
             </div>
             
             <div className="text-center mt-8">
-              <Button variant="outline">Browse All Products</Button>
+              <Button variant="outline">{t('marketplace.product.browseAll')}</Button>
             </div>
           </TabsContent>
           
           <TabsContent value="hubs" className="mt-8">
-            <div className="bg-muted aspect-video rounded-lg mb-6 p-4 flex items-center justify-center">
-              <div className="text-center">
-                <MapPin className="h-12 w-12 text-nektech-orange mx-auto mb-4" />
-                <p className="text-lg font-medium">Interactive Map Coming Soon</p>
-                <p className="text-sm text-muted-foreground">
-                  Our hub locations will be displayed here using OpenStreetMap
-                </p>
-              </div>
-            </div>
+            {/* OpenStreetMap Integration */}
+            <HubsMap />
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
               {['Delhi', 'Mumbai', 'Jaipur', 'Lucknow', 'Bangalore', 'Chennai'].map((location) => (
                 <Card key={location} className="feature-card">
                   <CardHeader>
@@ -116,9 +115,9 @@ const MarketplaceFeature = () => {
         <div className="mt-16 bg-gradient-to-r from-nektech-blue to-nektech-orange p-0.5 rounded-xl">
           <div className="bg-card p-8 rounded-lg">
             <div className="text-center">
-              <h3 className="text-2xl font-display font-bold mb-4">Partner Platforms</h3>
+              <h3 className="text-2xl font-display font-bold mb-4">{t('marketplace.partners.title')}</h3>
               <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
-                We connect your products to leading e-commerce marketplaces
+                {t('marketplace.partners.subtitle')}
               </p>
             </div>
             
@@ -139,7 +138,7 @@ const MarketplaceFeature = () => {
                 <div className="w-24 h-24 bg-muted rounded-lg flex items-center justify-center mb-3">
                   <p className="font-bold text-nektech-blue">NEKTECH</p>
                 </div>
-                <p className="font-medium">Direct Marketplace</p>
+                <p className="font-medium">{t('marketplace.partners.direct')}</p>
               </div>
             </div>
           </div>

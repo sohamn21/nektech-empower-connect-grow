@@ -1,0 +1,35 @@
+
+{
+  "navbar": {
+    "home": "Home",
+    "features": "Features",
+    "marketplace": "Marketplace",
+    "contact": "Contact",
+    "signIn": "Sign In",
+    "signOut": "Sign Out"
+  },
+  "marketplace": {
+    "title": "NEKTECH Marketplace",
+    "subtitle": "Connect with customers worldwide and access major e-commerce platforms through our marketplace and community hubs.",
+    "tabs": {
+      "products": "Products",
+      "hubs": "NEKTECH Hubs"
+    },
+    "product": {
+      "viewDetails": "View Details",
+      "browseAll": "Browse All Products"
+    },
+    "hubsMap": {
+      "comingSoon": "Interactive Map Coming Soon",
+      "mapDisplay": "Our hub locations will be displayed here using OpenStreetMap"
+    },
+    "partners": {
+      "title": "Partner Platforms",
+      "subtitle": "We connect your products to leading e-commerce marketplaces",
+      "direct": "Direct Marketplace"
+    }
+  },
+  "languageSelector": {
+    "label": "Language"
+  }
+}
