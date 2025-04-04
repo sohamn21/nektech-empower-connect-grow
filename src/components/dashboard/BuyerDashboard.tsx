@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,8 +21,10 @@ const BuyerDashboard = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        // Using as const to specify the exact table name
+        const tableName = "products" as const;
         const { data, error } = await supabase
-          .from('products' as TableNames)
+          .from(tableName)
           .select(`
             *,
             profiles:owner_id(name)

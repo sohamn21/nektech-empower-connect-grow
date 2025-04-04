@@ -109,3 +109,6 @@ export type TableNames =
   | "hub_manager_profiles"
   | "products"
   | "schemes";
+
+// Helper type to avoid recursive type instantiation in Supabase queries
+export type SupabaseQueryParams = { table: TableNames };

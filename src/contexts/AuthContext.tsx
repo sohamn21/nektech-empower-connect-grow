@@ -62,8 +62,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   
   const fetchUserProfile = async (userId: string) => {
     try {
+      // Using as const to specify the exact table name
+      const profilesTable = "profiles" as const;
       const { data: profileData, error: profileError } = await supabase
-        .from('profiles' as TableNames)
+        .from(profilesTable)
         .select('*')
         .eq('id', userId)
         .single();
@@ -75,8 +77,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         let roleSpecificData = {};
         
         if (mainProfile.role === 'entrepreneur') {
+          // Using as const to specify the exact table name
+          const entrepreneurTable = "entrepreneur_profiles" as const;
           const { data, error } = await supabase
-            .from('entrepreneur_profiles' as TableNames)
+            .from(entrepreneurTable)
             .select('*')
             .eq('id', userId)
             .single();
@@ -85,8 +89,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             roleSpecificData = data;
           }
         } else if (mainProfile.role === 'hub_manager') {
+          // Using as const to specify the exact table name
+          const hubManagerTable = "hub_manager_profiles" as const;
           const { data, error } = await supabase
-            .from('hub_manager_profiles' as TableNames)
+            .from(hubManagerTable)
             .select('*')
             .eq('id', userId)
             .single();
@@ -95,8 +101,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             roleSpecificData = data;
           }
         } else if (mainProfile.role === 'buyer') {
+          // Using as const to specify the exact table name
+          const buyerTable = "buyer_profiles" as const;
           const { data, error } = await supabase
-            .from('buyer_profiles' as TableNames)
+            .from(buyerTable)
             .select('*')
             .eq('id', userId)
             .single();
@@ -105,8 +113,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             roleSpecificData = data;
           }
         } else if (mainProfile.role === 'csr') {
+          // Using as const to specify the exact table name
+          const csrTable = "csr_profiles" as const;
           const { data, error } = await supabase
-            .from('csr_profiles' as TableNames)
+            .from(csrTable)
             .select('*')
             .eq('id', userId)
             .single();
@@ -163,8 +173,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       
       if (Object.keys(mainProfileProps).length > 0) {
+        // Using as const to specify the exact table name
+        const profilesTable = "profiles" as const;
         const { error } = await supabase
-          .from('profiles' as TableNames)
+          .from(profilesTable)
           .update(mainProfileProps)
           .eq('id', user.id);
           
@@ -172,13 +184,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       
       if (Object.keys(roleSpecificProps).length > 0 && userProfile?.role) {
-        const tableName = `${userProfile.role}_profiles` as TableNames;
-        const { error } = await supabase
-          .from(tableName)
-          .update(roleSpecificProps)
-          .eq('id', user.id);
-          
-        if (error) throw error;
+        // Construct table name and ensure it's a valid TableName
+        const roleTableName = `${userProfile.role}_profiles` as const;
+        // Check that it's a valid table name before using it
+        if (["entrepreneur_profiles", "hub_manager_profiles", "buyer_profiles", "csr_profiles"].includes(roleTableName)) {
+          const { error } = await supabase
+            .from(roleTableName)
+            .update(roleSpecificProps)
+            .eq('id', user.id);
+            
+          if (error) throw error;
+        }
       }
       
       await fetchUserProfile(user.id);

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
@@ -52,8 +53,10 @@ const EntrepreneurDashboard = () => {
       if (!userProfile) return;
       
       try {
+        // Using as const to specify the exact table name
+        const tableName = "products" as const;
         const { data, error } = await supabase
-          .from('products' as TableNames)
+          .from(tableName)
           .select('*')
           .eq('owner_id', userProfile.id);
           
@@ -81,8 +84,10 @@ const EntrepreneurDashboard = () => {
       if (!userProfile) return;
       
       try {
+        // Using as const to specify the exact table name
+        const tableName = "schemes" as const;
         const { data: rawData, error } = await supabase
-          .from('schemes' as TableNames)
+          .from(tableName)
           .select('*');
           
         if (error) throw error;
@@ -148,8 +153,10 @@ const EntrepreneurDashboard = () => {
     setIsSubmitting(true);
     
     try {
+      // Using as const to specify the exact table name
+      const tableName = "products" as const;
       const { error } = await supabase
-        .from('products' as TableNames)
+        .from(tableName)
         .insert({
           owner_id: userProfile.id,
           name: data.name,
@@ -170,7 +177,7 @@ const EntrepreneurDashboard = () => {
       
       // Reload products
       const { data: newProducts, error: fetchError } = await supabase
-        .from('products' as TableNames)
+        .from(tableName)
         .select('*')
         .eq('owner_id', userProfile.id);
         
