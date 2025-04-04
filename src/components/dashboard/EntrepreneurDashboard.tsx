@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Edit, Headphones, FileText, User, PenSquare } from "lucide-react";
+import { EntrepreneurProfile } from "@/types";
 
 // Mock products data
 const mockProducts = [
@@ -93,8 +93,8 @@ const EntrepreneurDashboard = () => {
   const [products, setProducts] = useState(mockProducts);
   const [hubManagerPermission, setHubManagerPermission] = useState(
     userProfile?.role === 'entrepreneur' && 
-    'hubManagerPermission' in (userProfile as any) ? 
-    (userProfile as any).hubManagerPermission : false
+    'hubManagerPermission' in (userProfile as EntrepreneurProfile) ? 
+    (userProfile as EntrepreneurProfile).hubManagerPermission : false
   );
 
   // Toggle hub manager permission
@@ -104,13 +104,13 @@ const EntrepreneurDashboard = () => {
     
     if (userProfile && userProfile.role === 'entrepreneur') {
       try {
+        const entrepreneurProfile = userProfile as EntrepreneurProfile;
         await updateUserProfile({
-          ...userProfile,
+          ...entrepreneurProfile,
           hubManagerPermission: newPermissionValue
-        });
+        } as EntrepreneurProfile);
       } catch (error) {
         console.error("Failed to update permission:", error);
-        // Revert UI state on error
         setHubManagerPermission(!newPermissionValue);
       }
     }
