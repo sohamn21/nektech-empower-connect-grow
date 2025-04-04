@@ -1,4 +1,3 @@
-
 export type UserRole = 'entrepreneur' | 'hub_manager' | 'buyer' | 'csr' | 'admin';
 
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
@@ -74,7 +73,7 @@ export interface GovScheme {
     maxAge?: number;
   };
   benefits: string[];
-  application_url: string;  // Note: Keep snake_case here to match database fields
+  application_url: string;
   created_at: string;
 }
 
@@ -121,6 +120,3 @@ export type TableNames =
   | "products"
   | "schemes"
   | "user_interactions";
-
-// Helper type to avoid recursive type instantiation in Supabase queries
-export type SupabaseQueryParams = { table: TableNames };

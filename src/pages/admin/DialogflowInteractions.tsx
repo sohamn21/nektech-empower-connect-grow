@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -49,8 +50,9 @@ const DialogflowInteractions = () => {
     setLoading(true);
     
     try {
+      // Use type assertion to tell TypeScript that we're safely handling this
       let query = supabase
-        .from('user_interactions')
+        .from('user_interactions' as any)
         .select('*', { count: 'exact' });
       
       // Apply filters
@@ -79,9 +81,8 @@ const DialogflowInteractions = () => {
         return;
       }
       
-      // Explicitly cast the data to UserInteraction[] type
-      const typedData = (data || []) as unknown as UserInteraction[];
-      setInteractions(typedData);
+      // Use type assertion to ensure the data conforms to UserInteraction[]
+      setInteractions(data as unknown as UserInteraction[]);
       setTotalPages(Math.ceil((count || 0) / itemsPerPage));
     } catch (error) {
       console.error("Error in fetchInteractions:", error);
@@ -93,7 +94,7 @@ const DialogflowInteractions = () => {
   const downloadCSV = async () => {
     try {
       let query = supabase
-        .from('user_interactions')
+        .from('user_interactions' as any)
         .select('*');
       
       // Apply filters
@@ -120,7 +121,7 @@ const DialogflowInteractions = () => {
       const headers = ['ID', 'Phone Number', 'Intent', 'User Input', 'Language', 'Timestamp'];
       const csvRows = [
         headers.join(','),
-        ...((data || []) as unknown as UserInteraction[]).map(item => [
+        ...((data as unknown as UserInteraction[]) || []).map(item => [
           item.id,
           item.phone_number || '',
           item.intent,
