@@ -7,7 +7,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Bell, HelpCircle, Download } from "lucide-react";
+import { Loader2, Bell, HelpCircle, Download, AlertCircle } from "lucide-react";
 import EntrepreneurDashboard from "@/components/dashboard/EntrepreneurDashboard";
 import HubManagerDashboard from "@/components/dashboard/HubManagerDashboard";
 import BuyerDashboard from "@/components/dashboard/BuyerDashboard";
@@ -17,6 +17,7 @@ import LanguageSelector from "@/components/LanguageSelector";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { toast } from "@/components/ui/use-toast";
 
 const Dashboard = () => {
   const { t, i18n } = useTranslation();
@@ -24,6 +25,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [isComponentLoading, setIsComponentLoading] = useState(true);
   const [currentTab, setCurrentTab] = useState("dashboard");
+  const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
     // If user is not authenticated and not loading, redirect to login
@@ -38,6 +40,24 @@ const Dashboard = () => {
     
     return () => clearTimeout(timer);
   }, [isAuthenticated, isLoading, navigate]);
+
+  useEffect(() => {
+    // Check for authentication errors
+    if (!isLoading && isAuthenticated && !userProfile) {
+      setAuthError("Unable to load your profile. Please sign out and try again.");
+      
+      // Show toast notification
+      toast({
+        title: "Profile Loading Error",
+        description: "We had trouble loading your profile data. Please try signing out and back in.",
+        variant: "destructive",
+      });
+      
+      console.log("Authentication issue: User is authenticated but profile data is missing");
+    } else {
+      setAuthError(null);
+    }
+  }, [isLoading, isAuthenticated, userProfile]);
 
   // Show loading state while checking authentication
   if (isLoading) {
@@ -85,6 +105,49 @@ const Dashboard = () => {
     );
   }
 
+  // If there's an auth error, show error state
+  if (authError) {
+    return (
+      <div className="min-h-screen">
+        <Navbar />
+        <main className="container mx-auto px-4 py-12 flex items-center justify-center">
+          <Card className="w-full max-w-md border-red-200">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-red-500" />
+                <CardTitle className="text-red-600">{t('dashboard.error')}</CardTitle>
+              </div>
+              <CardDescription>
+                {authError}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                This could be due to a database issue or missing profile information.
+              </p>
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
+                <p className="text-sm text-amber-800">
+                  <strong>Debugging Info:</strong><br />
+                  User Role: {userRole || 'Not set'}<br />
+                  Authenticated: {isAuthenticated ? 'Yes' : 'No'}<br />
+                  Profile Data: {userProfile ? 'Available' : 'Missing'}
+                </p>
+              </div>
+              <Button 
+                onClick={() => signOut()} 
+                className="w-full"
+                variant="destructive"
+              >
+                {t('dashboard.signOut')}
+              </Button>
+            </CardContent>
+          </Card>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   // Show appropriate dashboard based on user role
   const renderDashboardContent = () => {
     if (!userProfile) return null;
@@ -115,6 +178,11 @@ const Dashboard = () => {
           <div className="p-8 text-center">
             <p className="text-xl">{t('dashboard.roleNotConfigured')}</p>
             <p className="mt-2">Current role: {userRole || 'Unknown'}</p>
+            <div className="mt-6">
+              <Button variant="outline" onClick={() => navigate("/auth")}>
+                Return to Login
+              </Button>
+            </div>
           </div>
         );
     }
