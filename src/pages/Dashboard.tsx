@@ -7,18 +7,23 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Loader2, Languages, Bell, HelpCircle, Download } from "lucide-react";
 import EntrepreneurDashboard from "@/components/dashboard/EntrepreneurDashboard";
 import HubManagerDashboard from "@/components/dashboard/HubManagerDashboard";
 import BuyerDashboard from "@/components/dashboard/BuyerDashboard";
 import CSRDashboard from "@/components/dashboard/CSRDashboard";
 import { UserProfile } from "@/types";
+import LanguageSelector from "@/components/LanguageSelector";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const Dashboard = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { isAuthenticated, isLoading, userProfile, userRole, signOut } = useAuth();
   const navigate = useNavigate();
   const [isComponentLoading, setIsComponentLoading] = useState(true);
+  const [currentTab, setCurrentTab] = useState("dashboard");
 
   useEffect(() => {
     // If user is not authenticated and not loading, redirect to login
@@ -115,21 +120,153 @@ const Dashboard = () => {
     }
   };
 
+  // New dashboard header with additional functionality
+  const renderDashboardHeader = () => (
+    <div className="bg-background border-b py-4">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl md:text-3xl font-bold">
+            {t('dashboard.welcome')}, {userProfile?.name}
+          </h1>
+          <div className="flex items-center space-x-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="icon">
+                    <Bell size={18} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {t('dashboard.notifications')}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="icon">
+                    <Download size={18} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {t('dashboard.downloadReports')}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="icon">
+                    <HelpCircle size={18} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {t('dashboard.helpCenter')}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            
+            <LanguageSelector />
+          </div>
+        </div>
+        
+        <div className="mt-4">
+          <Badge variant="outline" className="bg-primary/10 text-primary">
+            {t(`dashboard.roles.${userRole || 'unknown'}`)}
+          </Badge>
+          <p className="text-muted-foreground mt-1">
+            {t('dashboard.roleDescription', { role: t(`dashboard.roles.${userRole || 'unknown'}`) })}
+          </p>
+        </div>
+        
+        <Tabs value={currentTab} onValueChange={setCurrentTab} className="mt-6">
+          <TabsList>
+            <TabsTrigger value="dashboard">{t('dashboard.tabs.dashboard')}</TabsTrigger>
+            <TabsTrigger value="analytics">{t('dashboard.tabs.analytics')}</TabsTrigger>
+            <TabsTrigger value="settings">{t('dashboard.tabs.settings')}</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-grow">
+      {renderDashboardHeader()}
+      <main className="flex-grow bg-muted/20">
         <div className="container mx-auto px-4 py-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold">
-              {t('dashboard.welcome')}, {userProfile?.name}
-            </h1>
-            <p className="text-muted-foreground">
-              {t('dashboard.roleDescription', { role: t(`dashboard.roles.${userRole || 'unknown'}`) })}
-            </p>
+          <div className="mb-4">
+            <Tabs value={currentTab} className="hidden">
+              <TabsContent value="dashboard">
+                {renderDashboardContent()}
+              </TabsContent>
+              <TabsContent value="analytics">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>{t('dashboard.analytics.title')}</CardTitle>
+                    <CardDescription>{t('dashboard.analytics.description')}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-80 flex items-center justify-center bg-muted rounded-md">
+                      <p className="text-muted-foreground">{t('dashboard.analytics.comingSoon')}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              <TabsContent value="settings">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>{t('dashboard.settings.title')}</CardTitle>
+                    <CardDescription>{t('dashboard.settings.description')}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="font-medium">{t('dashboard.settings.language')}</h3>
+                        <p className="text-sm text-muted-foreground mb-2">{t('dashboard.settings.languageDescription')}</p>
+                        <div className="flex items-center space-x-2">
+                          <Button 
+                            variant={i18n.language === 'en' ? 'default' : 'outline'} 
+                            size="sm" 
+                            onClick={() => i18n.changeLanguage('en')}
+                          >
+                            English
+                          </Button>
+                          <Button 
+                            variant={i18n.language === 'hi' ? 'default' : 'outline'} 
+                            size="sm" 
+                            onClick={() => i18n.changeLanguage('hi')}
+                          >
+                            हिन्दी
+                          </Button>
+                          <Button 
+                            variant={i18n.language === 'mr' ? 'default' : 'outline'} 
+                            size="sm" 
+                            onClick={() => i18n.changeLanguage('mr')}
+                          >
+                            मराठी
+                          </Button>
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="font-medium">{t('dashboard.settings.account')}</h3>
+                        <p className="text-sm text-muted-foreground mb-2">{t('dashboard.settings.accountDescription')}</p>
+                        <Button 
+                          onClick={() => signOut()} 
+                          variant="destructive"
+                        >
+                          {t('dashboard.signOut')}
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </div>
-
-          {renderDashboardContent()}
         </div>
       </main>
       <Footer />

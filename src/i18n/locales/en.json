@@ -15,7 +15,7 @@
     "getStarted": "Get Started",
     "learnMore": "Learn More",
     "dashboard": "Go to Dashboard",
-    "imageAlt": "Rural women entrepreneurs"
+    "imageAlt": "Rural women entrepreneur using mobile technology"
   },
   "features": {
     "sectionTitle": "Our Features",
@@ -318,8 +318,34 @@
   "dashboard": {
     "welcome": "Welcome",
     "loading": "Loading your dashboard...",
+    "loadingContent": "Loading your dashboard content...",
     "roleDescription": "You are logged in as a {role}",
     "roleNotConfigured": "Your user role is not configured",
+    "selectRole": "Select Your Role",
+    "selectRoleDescription": "Please select the role you want to use for your account",
+    "goToAuth": "Go to Authentication",
+    "signOut": "Sign Out",
+    "notifications": "Notifications",
+    "downloadReports": "Download Reports",
+    "helpCenter": "Help Center",
+    "tabs": {
+      "dashboard": "Dashboard",
+      "analytics": "Analytics",
+      "settings": "Settings"
+    },
+    "settings": {
+      "title": "Account Settings",
+      "description": "Manage your account settings and preferences",
+      "language": "Language Preferences",
+      "languageDescription": "Choose your preferred language for the interface",
+      "account": "Account Management",
+      "accountDescription": "Manage your account and sign out"
+    },
+    "analytics": {
+      "title": "Analytics & Reporting",
+      "description": "View your performance metrics and analytics",
+      "comingSoon": "Detailed analytics coming soon"
+    },
     "roles": {
       "entrepreneur": "woman entrepreneur",
       "hub_manager": "hub manager",
