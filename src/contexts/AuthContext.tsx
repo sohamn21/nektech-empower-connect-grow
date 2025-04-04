@@ -76,6 +76,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const mainProfile = profileData as ProfileData;
         let roleSpecificData = {};
         
+        // Determine which role-specific table to query based on the user's role
         if (mainProfile.role === 'entrepreneur') {
           // Using as const to specify the exact table name
           const entrepreneurTable = "entrepreneur_profiles" as const;
@@ -125,6 +126,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             roleSpecificData = data;
           }
         }
+        // Note: We're not handling 'admin' role here since there's no admin_profiles table
         
         const transformedProfile: UserProfile = {
           id: mainProfile.id,
@@ -153,7 +155,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
   
   const updateUserProfile = async (profile: Partial<UserProfile>) => {
-    if (!user) return;
+    if (!user || !userProfile) return;
     
     try {
       const mainProfileProps: Record<string, any> = {};
@@ -184,10 +186,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       
       if (Object.keys(roleSpecificProps).length > 0 && userProfile?.role) {
-        // Construct table name and ensure it's a valid TableName
-        const roleTableName = `${userProfile.role}_profiles` as const;
-        // Check that it's a valid table name before using it
-        if (["entrepreneur_profiles", "hub_manager_profiles", "buyer_profiles", "csr_profiles"].includes(roleTableName)) {
+        // Construct table name for the role-specific profile
+        let roleTableName: TableNames | null = null;
+        
+        // Make sure we only use valid table names that exist in our TableNames type
+        switch (userProfile.role) {
+          case 'entrepreneur':
+            roleTableName = "entrepreneur_profiles";
+            break;
+          case 'hub_manager':
+            roleTableName = "hub_manager_profiles";
+            break;
+          case 'buyer':
+            roleTableName = "buyer_profiles";
+            break;
+          case 'csr':
+            roleTableName = "csr_profiles";
+            break;
+          // We don't have an admin_profiles table, so we skip this case
+          default:
+            roleTableName = null;
+        }
+        
+        // Only proceed if we have a valid table name
+        if (roleTableName) {
           const { error } = await supabase
             .from(roleTableName)
             .update(roleSpecificProps)

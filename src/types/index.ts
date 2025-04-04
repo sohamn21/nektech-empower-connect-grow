@@ -1,4 +1,3 @@
-
 export type UserRole = 'entrepreneur' | 'hub_manager' | 'buyer' | 'csr' | 'admin';
 
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
