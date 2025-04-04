@@ -2,377 +2,391 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend, 
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell
-} from "recharts";
-import { 
-  Download,
-  Users,
-  ShoppingBag,
-  TrendingUp,
-  BadgeIndianRupee
-} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ChevronRight, User, Calendar, Download, FileText } from "lucide-react";
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 
-// Mock data for impact metrics
-const impactData = [
-  { name: 'Jan', entrepreneurs: 45, products: 78, revenue: 25000 },
-  { name: 'Feb', entrepreneurs: 50, products: 90, revenue: 30000 },
-  { name: 'Mar', entrepreneurs: 62, products: 110, revenue: 37000 },
-  { name: 'Apr', entrepreneurs: 70, products: 125, revenue: 45000 },
-  { name: 'May', entrepreneurs: 85, products: 150, revenue: 58000 },
-  { name: 'Jun', entrepreneurs: 95, products: 180, revenue: 67000 }
-];
+// Mock impact data
+const impactData = {
+  totalEntrepreneurs: 125,
+  totalProducts: 350,
+  averageIncomeIncrease: 32,
+  regionsImpacted: 12,
+  livesImpacted: 625,
+  monthlyGrowth: [
+    { month: 'Jan', entrepreneurs: 85, products: 210 },
+    { month: 'Feb', entrepreneurs: 90, products: 230 },
+    { month: 'Mar', entrepreneurs: 95, products: 250 },
+    { month: 'Apr', entrepreneurs: 105, products: 270 },
+    { month: 'May', entrepreneurs: 110, products: 290 },
+    { month: 'Jun', entrepreneurs: 115, products: 310 },
+    { month: 'Jul', entrepreneurs: 125, products: 350 }
+  ],
+  categoryDistribution: [
+    { name: 'Handicrafts', value: 30 },
+    { name: 'Textiles', value: 25 },
+    { name: 'Food Products', value: 20 },
+    { name: 'Home Decor', value: 15 },
+    { name: 'Jewelry', value: 10 }
+  ],
+  regionDistribution: [
+    { name: 'Maharashtra', value: 35 },
+    { name: 'Rajasthan', value: 25 },
+    { name: 'Gujarat', value: 20 },
+    { name: 'Karnataka', value: 12 },
+    { name: 'Other', value: 8 }
+  ]
+};
 
-// Mock data for initiative funding
-const initiativesData = [
-  { name: 'Training Programs', value: 35 },
-  { name: 'Equipment Support', value: 30 },
-  { name: 'Marketing Initiatives', value: 20 },
-  { name: 'Logistics Support', value: 15 }
-];
-
-// Colors for pie chart
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
-
-// Mock initiatives data
-const initiatives = [
+// Mock initiatives
+const mockInitiatives = [
   {
     id: '1',
-    title: 'Digital Skills Training',
-    description: 'Training program for basic digital literacy skills',
-    fundingGoal: 100000,
-    currentFunding: 75000,
-    beneficiaries: 120,
+    title: 'Rural Craft Revival Program',
+    description: 'Supporting traditional artisans and preserving cultural heritage through technology enablement.',
+    budget: 500000,
+    progress: 60,
     startDate: '2023-01-15',
-    endDate: '2023-12-15',
-    status: 'active'
+    endDate: '2023-12-31',
+    status: 'active',
+    entrepreneurs: 45,
+    location: 'Rajasthan, Maharashtra'
   },
   {
     id: '2',
-    title: 'Artisan Equipment Modernization',
-    description: 'Providing modern equipment to traditional artisans',
-    fundingGoal: 250000,
-    currentFunding: 125000,
-    beneficiaries: 85,
+    title: 'Women\'s Digital Literacy Campaign',
+    description: 'Teaching digital skills to women entrepreneurs to help them access online marketplaces.',
+    budget: 350000,
+    progress: 75,
     startDate: '2023-03-10',
-    endDate: '2023-09-10',
-    status: 'active'
+    endDate: '2023-09-30',
+    status: 'active',
+    entrepreneurs: 60,
+    location: 'Gujarat, Karnataka'
   },
   {
     id: '3',
-    title: 'Rural Market Connect',
-    description: 'Connecting rural entrepreneurs to urban markets',
-    fundingGoal: 180000,
-    currentFunding: 180000,
-    beneficiaries: 150,
-    startDate: '2022-08-01',
-    endDate: '2023-08-01',
-    status: 'completed'
+    title: 'Sustainable Agriculture Support',
+    description: 'Helping women farmers adopt sustainable practices and find markets for organic produce.',
+    budget: 400000,
+    progress: 25,
+    startDate: '2023-06-01',
+    endDate: '2024-05-31',
+    status: 'potential',
+    entrepreneurs: 0,
+    location: 'Maharashtra, Karnataka'
   }
 ];
+
+// Mock reports
+const mockReports = [
+  { 
+    id: '1', 
+    name: 'Q1 2023 Impact Report', 
+    period: 'Jan - Mar 2023',
+    type: 'quarterly',
+    date: '2023-04-15',
+    fileUrl: '#'
+  },
+  { 
+    id: '2', 
+    name: 'Q2 2023 Impact Report', 
+    period: 'Apr - Jun 2023',
+    type: 'quarterly',
+    date: '2023-07-15',
+    fileUrl: '#'
+  },
+  { 
+    id: '3', 
+    name: 'CSR Tax Benefit Documentation FY 2022-23', 
+    period: 'FY 2022-23',
+    type: 'tax',
+    date: '2023-05-30',
+    fileUrl: '#'
+  }
+];
+
+// Chart colors
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
 const CSRDashboard = () => {
   const { t } = useTranslation();
   const { userProfile } = useAuth();
-  const [activeInitiatives, setActiveInitiatives] = useState(initiatives.filter(i => i.status === 'active'));
-  
+  const [activeInitiatives, setActiveInitiatives] = useState(
+    mockInitiatives.filter(initiative => initiative.status === 'active')
+  );
+  const [potentialInitiatives, setPotentialInitiatives] = useState(
+    mockInitiatives.filter(initiative => initiative.status === 'potential')
+  );
+  const [reports, setReports] = useState(mockReports);
+
   return (
     <div className="space-y-8">
-      <Tabs defaultValue="dashboard" className="w-full">
+      <Tabs defaultValue="impact" className="w-full">
         <TabsList className="grid grid-cols-4 w-full max-w-2xl mx-auto">
-          <TabsTrigger value="dashboard">{t('dashboard.csr.tabs.dashboard')}</TabsTrigger>
+          <TabsTrigger value="impact">{t('dashboard.csr.tabs.impact')}</TabsTrigger>
           <TabsTrigger value="initiatives">{t('dashboard.csr.tabs.initiatives')}</TabsTrigger>
           <TabsTrigger value="reports">{t('dashboard.csr.tabs.reports')}</TabsTrigger>
           <TabsTrigger value="profile">{t('dashboard.csr.tabs.profile')}</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="dashboard" className="mt-6">
-          {/* Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">
-                      {t('dashboard.csr.metrics.entrepreneurs')}
-                    </p>
-                    <h3 className="text-2xl font-bold mt-1">95</h3>
-                  </div>
-                  <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center">
-                    <Users className="h-6 w-6 text-primary" />
-                  </div>
-                </div>
-                <div className="flex items-center mt-4 text-xs text-green-500">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  <span>+11.8% from last month</span>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">
-                      {t('dashboard.csr.metrics.products')}
-                    </p>
-                    <h3 className="text-2xl font-bold mt-1">180</h3>
-                  </div>
-                  <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center">
-                    <ShoppingBag className="h-6 w-6 text-primary" />
-                  </div>
-                </div>
-                <div className="flex items-center mt-4 text-xs text-green-500">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  <span>+20% from last month</span>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">
-                      {t('dashboard.csr.metrics.revenue')}
-                    </p>
-                    <h3 className="text-2xl font-bold mt-1">₹67,000</h3>
-                  </div>
-                  <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center">
-                    <BadgeIndianRupee className="h-6 w-6 text-primary" />
-                  </div>
-                </div>
-                <div className="flex items-center mt-4 text-xs text-green-500">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  <span>+15.5% from last month</span>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">
-                      {t('dashboard.csr.metrics.initiatives')}
-                    </p>
-                    <h3 className="text-2xl font-bold mt-1">3</h3>
-                  </div>
-                  <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center">
-                    <Users className="h-6 w-6 text-primary" />
-                  </div>
-                </div>
-                <div className="flex items-center mt-4 text-xs">
-                  <span>2 active, 1 completed</span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-          
-          {/* Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('dashboard.csr.charts.growth')}</CardTitle>
-                <CardDescription>{t('dashboard.csr.charts.growthDescription')}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart
-                      data={impactData}
-                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Line type="monotone" dataKey="entrepreneurs" stroke="#8884d8" activeDot={{ r: 8 }} />
-                      <Line type="monotone" dataKey="products" stroke="#82ca9d" />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('dashboard.csr.charts.funding')}</CardTitle>
-                <CardDescription>{t('dashboard.csr.charts.fundingDescription')}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={initiativesData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                      >
-                        {initiativesData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-          
-          {/* Active initiatives */}
-          <Card>
+        <TabsContent value="impact" className="mt-6">
+          <Card className="mb-6">
             <CardHeader>
-              <CardTitle>{t('dashboard.csr.activeInitiatives')}</CardTitle>
-              <CardDescription>{t('dashboard.csr.activeInitiativesDescription')}</CardDescription>
+              <CardTitle>{t('dashboard.csr.impact.title')}</CardTitle>
+              <CardDescription>{t('dashboard.csr.impact.description')}</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
-                {activeInitiatives.map((initiative) => (
-                  <div key={initiative.id} className="border rounded-lg p-4">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-                      <div>
-                        <h3 className="text-lg font-medium">{initiative.title}</h3>
-                        <p className="text-muted-foreground text-sm mt-1">{initiative.description}</p>
-                      </div>
-                      <Button size="sm">
-                        {t('dashboard.csr.viewDetails')}
-                      </Button>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <Card>
+                  <CardContent className="p-4">
+                    <p className="text-sm text-muted-foreground">{t('dashboard.csr.impact.totalEntrepreneurs')}</p>
+                    <p className="text-3xl font-bold">{impactData.totalEntrepreneurs}</p>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-4">
+                    <p className="text-sm text-muted-foreground">{t('dashboard.csr.impact.totalProducts')}</p>
+                    <p className="text-3xl font-bold">{impactData.totalProducts}</p>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-4">
+                    <p className="text-sm text-muted-foreground">{t('dashboard.csr.impact.averageIncome')}</p>
+                    <p className="text-3xl font-bold">+{impactData.averageIncomeIncrease}%</p>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-4">
+                    <p className="text-sm text-muted-foreground">{t('dashboard.csr.impact.regionsImpacted')}</p>
+                    <p className="text-3xl font-bold">{impactData.regionsImpacted}</p>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-4">
+                    <p className="text-sm text-muted-foreground">{t('dashboard.csr.impact.livesImpacted')}</p>
+                    <p className="text-3xl font-bold">{impactData.livesImpacted}</p>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Growth Trends</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart
+                          data={impactData.monthlyGrowth}
+                          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                        >
+                          <XAxis dataKey="month" />
+                          <YAxis />
+                          <Tooltip />
+                          <Legend />
+                          <Line 
+                            type="monotone" 
+                            dataKey="entrepreneurs" 
+                            stroke="#8884d8" 
+                            name="Entrepreneurs" 
+                            activeDot={{ r: 8 }} 
+                          />
+                          <Line 
+                            type="monotone" 
+                            dataKey="products" 
+                            stroke="#82ca9d" 
+                            name="Products" 
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
                     </div>
-                    
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>
-                          {t('dashboard.csr.funding', { 
-                            current: initiative.currentFunding.toLocaleString(), 
-                            goal: initiative.fundingGoal.toLocaleString() 
-                          })}
-                        </span>
-                        <span className="font-medium">
-                          {((initiative.currentFunding / initiative.fundingGoal) * 100).toFixed(0)}%
-                        </span>
+                  </CardContent>
+                </Card>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Product Categories</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-60">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={impactData.categoryDistribution}
+                              cx="50%"
+                              cy="50%"
+                              innerRadius={0}
+                              outerRadius={80}
+                              fill="#8884d8"
+                              paddingAngle={5}
+                              dataKey="value"
+                              label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
+                            >
+                              {impactData.categoryDistribution.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                              ))}
+                            </Pie>
+                            <Tooltip />
+                          </PieChart>
+                        </ResponsiveContainer>
                       </div>
-                      <Progress 
-                        value={(initiative.currentFunding / initiative.fundingGoal) * 100} 
-                        className="h-2"
-                      />
-                    </div>
-                    
-                    <div className="flex flex-wrap justify-between mt-4 text-sm">
-                      <div>
-                        <span className="text-muted-foreground">{t('dashboard.csr.beneficiaries')}: </span>
-                        <span className="font-medium">{initiative.beneficiaries}</span>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Regional Distribution</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-60">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart
+                            data={impactData.regionDistribution}
+                            layout="vertical"
+                            margin={{ top: 5, right: 30, left: 60, bottom: 5 }}
+                          >
+                            <XAxis type="number" />
+                            <YAxis type="category" dataKey="name" />
+                            <Tooltip />
+                            <Bar dataKey="value" fill="#8884d8">
+                              {impactData.regionDistribution.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                              ))}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
                       </div>
-                      <div>
-                        <span className="text-muted-foreground">{t('dashboard.csr.timeline')}: </span>
-                        <span className="font-medium">
-                          {new Date(initiative.startDate).toLocaleDateString()} - 
-                          {new Date(initiative.endDate).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+              
+              <div className="mt-8 flex justify-center">
+                <Button>
+                  {t('dashboard.csr.impact.viewDetailedReport')}
+                </Button>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
         
         <TabsContent value="initiatives" className="mt-6">
-          <Card>
+          <Card className="mb-6">
             <CardHeader>
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                  <CardTitle>{t('dashboard.csr.initiatives.title')}</CardTitle>
-                  <CardDescription className="mt-1">{t('dashboard.csr.initiatives.description')}</CardDescription>
-                </div>
-                <Button>
-                  {t('dashboard.csr.initiatives.newInitiative')}
-                </Button>
-              </div>
+              <CardTitle>{t('dashboard.csr.initiatives.title')}</CardTitle>
+              <CardDescription>{t('dashboard.csr.initiatives.description')}</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
-                {initiatives.map((initiative) => (
-                  <div 
-                    key={initiative.id} 
-                    className={`border rounded-lg p-4 ${initiative.status === 'completed' ? 'bg-muted/20' : ''}`}
-                  >
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-lg font-medium">{initiative.title}</h3>
-                          {initiative.status === 'completed' ? (
-                            <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
-                              {t('dashboard.csr.initiatives.completed')}
-                            </span>
-                          ) : (
-                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
-                              {t('dashboard.csr.initiatives.active')}
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-muted-foreground text-sm mt-1">{initiative.description}</p>
-                      </div>
-                      <Button size="sm" variant={initiative.status === 'completed' ? 'outline' : 'default'}>
-                        {t('dashboard.csr.initiatives.manage')}
-                      </Button>
+              <div className="space-y-8">
+                <div>
+                  <h3 className="text-lg font-medium mb-4">{t('dashboard.csr.initiatives.activeInitiatives')}</h3>
+                  
+                  {activeInitiatives.length > 0 ? (
+                    <div className="space-y-4">
+                      {activeInitiatives.map((initiative) => (
+                        <Card key={initiative.id}>
+                          <CardHeader>
+                            <div className="flex items-center justify-between">
+                              <CardTitle>{initiative.title}</CardTitle>
+                              <Badge>{initiative.entrepreneurs} entrepreneurs</Badge>
+                            </div>
+                            <CardDescription>{initiative.description}</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between text-sm">
+                                <span>Progress</span>
+                                <span>{initiative.progress}%</span>
+                              </div>
+                              <Progress value={initiative.progress} className="h-2" />
+                              
+                              <div className="flex flex-wrap gap-x-6 gap-y-2 mt-4 text-sm">
+                                <div className="flex items-center">
+                                  <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+                                  <span>{initiative.startDate} to {initiative.endDate}</span>
+                                </div>
+                                <div>
+                                  <Badge variant="outline" className="font-normal">
+                                    Budget: ₹{(initiative.budget / 100000).toFixed(1)} lakh
+                                  </Badge>
+                                </div>
+                                <div>
+                                  <Badge variant="secondary" className="font-normal">
+                                    {initiative.location}
+                                  </Badge>
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                          <CardFooter className="border-t pt-4 flex justify-between">
+                            <Button variant="outline">
+                              {t('dashboard.csr.initiatives.viewDetails')}
+                            </Button>
+                          </CardFooter>
+                        </Card>
+                      ))}
                     </div>
-                    
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>
-                          {t('dashboard.csr.funding', { 
-                            current: initiative.currentFunding.toLocaleString(), 
-                            goal: initiative.fundingGoal.toLocaleString() 
-                          })}
-                        </span>
-                        <span className="font-medium">
-                          {((initiative.currentFunding / initiative.fundingGoal) * 100).toFixed(0)}%
-                        </span>
-                      </div>
-                      <Progress 
-                        value={(initiative.currentFunding / initiative.fundingGoal) * 100} 
-                        className="h-2"
-                      />
+                  ) : (
+                    <div className="text-center py-12 border rounded-lg bg-muted/20">
+                      <p className="text-muted-foreground">{t('dashboard.csr.initiatives.noInitiatives')}</p>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        {t('dashboard.csr.initiatives.noInitiativesDescription')}
+                      </p>
                     </div>
-                    
-                    <div className="flex flex-wrap justify-between mt-4 text-sm">
-                      <div>
-                        <span className="text-muted-foreground">{t('dashboard.csr.beneficiaries')}: </span>
-                        <span className="font-medium">{initiative.beneficiaries}</span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">{t('dashboard.csr.timeline')}: </span>
-                        <span className="font-medium">
-                          {new Date(initiative.startDate).toLocaleDateString()} - 
-                          {new Date(initiative.endDate).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </div>
+                  )}
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-medium mb-4">{t('dashboard.csr.initiatives.potentialInitiatives')}</h3>
+                  
+                  <div className="space-y-4">
+                    {potentialInitiatives.map((initiative) => (
+                      <Card key={initiative.id}>
+                        <CardHeader>
+                          <CardTitle>{initiative.title}</CardTitle>
+                          <CardDescription>{initiative.description}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+                            <div className="flex items-center">
+                              <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+                              <span>Planned: {initiative.startDate} to {initiative.endDate}</span>
+                            </div>
+                            <div>
+                              <Badge variant="outline" className="font-normal">
+                                Budget: ₹{(initiative.budget / 100000).toFixed(1)} lakh
+                              </Badge>
+                            </div>
+                            <div>
+                              <Badge variant="secondary" className="font-normal">
+                                {initiative.location}
+                              </Badge>
+                            </div>
+                          </div>
+                        </CardContent>
+                        <CardFooter className="border-t pt-4 flex justify-between">
+                          <Button variant="outline">
+                            {t('dashboard.csr.initiatives.viewDetails')}
+                          </Button>
+                          <Button>
+                            {t('dashboard.csr.initiatives.contribute')}
+                          </Button>
+                        </CardFooter>
+                      </Card>
+                    ))}
                   </div>
-                ))}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -382,26 +396,96 @@ const CSRDashboard = () => {
           <Card>
             <CardHeader>
               <CardTitle>{t('dashboard.csr.reports.title')}</CardTitle>
-              <CardDescription>
-                {t('dashboard.csr.reports.description')}
-              </CardDescription>
+              <CardDescription>{t('dashboard.csr.reports.description')}</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {['monthlyImpact', 'quarterlyAnalytics', 'annualReport', 'taxBenefits'].map((reportType, index) => (
-                  <div key={index} className="flex items-center justify-between border rounded-lg p-4">
-                    <div>
-                      <h3 className="font-medium">{t(`dashboard.csr.reports.types.${reportType}.title`)}</h3>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {t(`dashboard.csr.reports.types.${reportType}.description`)}
-                      </p>
+              <div className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="flex flex-col items-center space-y-4">
+                        <FileText className="h-12 w-12 text-primary" />
+                        <h3 className="font-medium">{t('dashboard.csr.reports.downloadTaxBenefits')}</h3>
+                        <Button>
+                          <Download className="h-4 w-4 mr-2" />
+                          Download Document
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="flex flex-col items-center space-y-4">
+                        <FileText className="h-12 w-12 text-primary" />
+                        <h3 className="font-medium">{t('dashboard.csr.reports.downloadImpactReport')}</h3>
+                        <Button>
+                          <Download className="h-4 w-4 mr-2" />
+                          Download Report
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-medium mb-4">{t('dashboard.csr.reports.quarterlyReports')}</h3>
+                  
+                  {reports.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full border-collapse">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left py-3 px-4">{t('dashboard.csr.reports.period')}</th>
+                            <th className="text-left py-3 px-4">Name</th>
+                            <th className="text-left py-3 px-4">{t('dashboard.csr.reports.type')}</th>
+                            <th className="text-left py-3 px-4">Date</th>
+                            <th className="text-right py-3 px-4">{t('dashboard.csr.reports.download')}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {reports
+                            .filter(report => report.type === 'quarterly')
+                            .map((report) => (
+                              <tr key={report.id} className="border-b hover:bg-muted/50">
+                                <td className="py-3 px-4">{report.period}</td>
+                                <td className="py-3 px-4 font-medium">{report.name}</td>
+                                <td className="py-3 px-4">
+                                  <Badge variant="outline">
+                                    Quarterly
+                                  </Badge>
+                                </td>
+                                <td className="py-3 px-4">{report.date}</td>
+                                <td className="py-3 px-4 text-right">
+                                  <Button asChild size="sm" variant="ghost">
+                                    <a href={report.fileUrl}>
+                                      <Download className="h-4 w-4" />
+                                      <span className="sr-only">Download</span>
+                                    </a>
+                                  </Button>
+                                </td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
                     </div>
-                    <Button variant="outline" size="sm">
-                      <Download className="h-4 w-4 mr-1" />
-                      {t('dashboard.csr.reports.download')}
-                    </Button>
+                  ) : (
+                    <div className="text-center py-6 border rounded-lg bg-muted/20">
+                      <p className="text-muted-foreground">{t('dashboard.csr.reports.noReports')}</p>
+                    </div>
+                  )}
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-medium mb-4">{t('dashboard.csr.reports.annualReports')}</h3>
+                  
+                  <div className="text-center py-6 border rounded-lg bg-muted/20">
+                    <p className="text-muted-foreground">{t('dashboard.csr.reports.noReports')}</p>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      {t('dashboard.csr.reports.noReportsDescription')}
+                    </p>
                   </div>
-                ))}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -411,58 +495,63 @@ const CSRDashboard = () => {
           <Card>
             <CardHeader>
               <CardTitle>{t('dashboard.csr.profile.title')}</CardTitle>
-              <CardDescription>
-                {t('dashboard.csr.profile.description')}
-              </CardDescription>
+              <CardDescription>{t('dashboard.csr.profile.description')}</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-1">
-                      {t('dashboard.csr.profile.name')}
-                    </h4>
-                    <p className="font-medium">{userProfile?.name}</p>
+              <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
+                  <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
+                    <User className="h-12 w-12 text-primary" />
                   </div>
-                  
                   <div>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-1">
-                      {t('dashboard.csr.profile.email')}
-                    </h4>
-                    <p className="font-medium">{userProfile?.email}</p>
+                    <h3 className="text-xl font-medium">{userProfile?.name}</h3>
+                    <p className="text-muted-foreground">{userProfile?.email}</p>
+                    {userProfile?.role === 'csr' && 'organizationName' in (userProfile as any) && (
+                      <p className="mt-1">{(userProfile as any).organizationName}</p>
+                    )}
                   </div>
-                  
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
                   <div>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-1">
-                      {t('dashboard.csr.profile.phone')}
-                    </h4>
-                    <p className="font-medium">{userProfile?.phone || "-"}</p>
+                    <Label className="text-sm text-muted-foreground">{t('dashboard.csr.profile.phone')}</Label>
+                    <p className="font-medium">{userProfile?.phone || '-'}</p>
                   </div>
                   
                   {userProfile?.role === 'csr' && (
                     <>
                       <div>
-                        <h4 className="text-sm font-medium text-muted-foreground mb-1">
-                          {t('dashboard.csr.profile.organization')}
-                        </h4>
-                        <p className="font-medium">{'organizationName' in (userProfile as any) ? 
-                          (userProfile as any).organizationName : 
-                          "-"}</p>
+                        <Label className="text-sm text-muted-foreground">{t('dashboard.csr.profile.organization')}</Label>
+                        <p className="font-medium">
+                          {'organizationName' in (userProfile as any) ? 
+                            (userProfile as any).organizationName : 
+                            '-'}
+                        </p>
                       </div>
                       
                       <div>
-                        <h4 className="text-sm font-medium text-muted-foreground mb-1">
-                          {t('dashboard.csr.profile.registrationNumber')}
-                        </h4>
-                        <p className="font-medium">{'registrationNumber' in (userProfile as any) ? 
-                          (userProfile as any).registrationNumber : 
-                          "-"}</p>
+                        <Label className="text-sm text-muted-foreground">{t('dashboard.csr.profile.registrationNumber')}</Label>
+                        <p className="font-medium">
+                          {'registrationNumber' in (userProfile as any) ? 
+                            (userProfile as any).registrationNumber : 
+                            '-'}
+                        </p>
                       </div>
                     </>
                   )}
+                  
+                  <div>
+                    <Label className="text-sm text-muted-foreground">Preferred Language</Label>
+                    <p className="font-medium">
+                      {userProfile?.preferredLanguage === 'en' ? 'English' : 
+                       userProfile?.preferredLanguage === 'hi' ? 'हिन्दी' : 
+                       userProfile?.preferredLanguage === 'mr' ? 'मराठी' : 
+                       userProfile?.preferredLanguage}
+                    </p>
+                  </div>
                 </div>
                 
-                <div className="pt-4">
+                <div className="flex justify-start pt-4">
                   <Button>
                     {t('dashboard.csr.profile.edit')}
                   </Button>

@@ -120,7 +120,7 @@ const Dashboard = () => {
     }
   };
 
-  // New dashboard header with additional functionality
+  // Dashboard header with additional functionality
   const renderDashboardHeader = () => (
     <div className="bg-background border-b py-4">
       <div className="container mx-auto px-4">

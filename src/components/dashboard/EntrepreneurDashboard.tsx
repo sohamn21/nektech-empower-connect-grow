@@ -1,210 +1,119 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { GovScheme, Product, DatabaseScheme, Json, TableNames } from "@/types";
-import { Play, Upload, ShoppingBag, School, FileText, Plus } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Plus, Edit, Headphones, FileText, User, PenSquare } from "lucide-react";
 
-const productSchema = z.object({
-  name: z.string().min(2, { message: "Product name must be at least 2 characters" }),
-  description: z.string().min(10, { message: "Description must be at least 10 characters" }),
-  price: z.coerce.number().positive({ message: "Price must be a positive number" }),
-  category: z.string().min(1, { message: "Please select a category" }),
-  location: z.string().min(2, { message: "Location must be at least 2 characters" }),
-});
+// Mock products data
+const mockProducts = [
+  {
+    id: '1',
+    name: 'Handwoven Basket',
+    description: 'Beautifully crafted traditional handwoven basket',
+    price: 450,
+    category: 'Handicrafts',
+    images: ['https://placehold.co/600x400/png'],
+    status: 'active',
+    created_at: '2023-06-15T10:00:00Z'
+  },
+  {
+    id: '2',
+    name: 'Embroidered Scarf',
+    description: 'Hand-embroidered cotton scarf with traditional designs',
+    price: 350,
+    category: 'Textiles',
+    images: ['https://placehold.co/600x400/png'],
+    status: 'active',
+    created_at: '2023-07-22T14:30:00Z'
+  }
+];
+
+// Mock training resources
+const mockTrainings = [
+  {
+    id: '1',
+    title: 'Marketing Basics',
+    description: 'Learn how to market your products effectively',
+    type: 'audio',
+    language: 'Hindi',
+    duration: '15 min',
+    date: '2023-08-10'
+  },
+  {
+    id: '2',
+    title: 'Pricing Strategies',
+    description: 'How to price your products for maximum profit',
+    type: 'video',
+    language: 'English',
+    duration: '12 min',
+    date: '2023-09-05'
+  },
+  {
+    id: '3',
+    title: 'Quality Control',
+    description: 'Maintaining consistent quality in your products',
+    type: 'audio',
+    language: 'Marathi',
+    duration: '18 min',
+    date: '2023-10-20'
+  }
+];
+
+// Mock schemes
+const mockSchemes = [
+  {
+    id: '1',
+    title: 'Mudra Loan Scheme',
+    description: 'Government scheme providing loans up to ₹10 lakh for small enterprises without collateral',
+    eligibility: 'Any Indian citizen with a business plan',
+    benefits: ['Loans without collateral', 'Low interest rates', 'Flexible repayment options'],
+    applicationUrl: 'https://example.com/mudra'
+  },
+  {
+    id: '2',
+    title: 'Stand-Up India',
+    description: 'Facilitates bank loans between ₹10 lakh and ₹1 crore for SC/ST and women entrepreneurs',
+    eligibility: 'Women entrepreneurs or SC/ST entrepreneurs',
+    benefits: ['Composite loan', 'Training programs', 'Facilitation support'],
+    applicationUrl: 'https://example.com/standup'
+  }
+];
 
 const EntrepreneurDashboard = () => {
   const { t } = useTranslation();
-  const { userProfile } = useAuth();
-  const [eligibleSchemes, setEligibleSchemes] = useState<GovScheme[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
+  const { userProfile, updateUserProfile } = useAuth();
+  const [products, setProducts] = useState(mockProducts);
+  const [hubManagerPermission, setHubManagerPermission] = useState(
+    userProfile?.role === 'entrepreneur' && 
+    'hubManagerPermission' in (userProfile as any) ? 
+    (userProfile as any).hubManagerPermission : false
+  );
 
-  const form = useForm<z.infer<typeof productSchema>>({
-    resolver: zodResolver(productSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      price: 0,
-      category: "",
-      location: "",
-    },
-  });
-
-  // Fetch products from Supabase
-  useEffect(() => {
-    const fetchProducts = async () => {
-      if (!userProfile) return;
-      
-      try {
-        // Using as const to specify the exact table name
-        const tableName = "products" as const;
-        const { data, error } = await supabase
-          .from(tableName)
-          .select('*')
-          .eq('owner_id', userProfile.id);
-          
-        if (error) throw error;
-        
-        setProducts(data as Product[]);
-      } catch (error: any) {
-        console.error('Error fetching products:', error.message);
-        toast({
-          variant: "destructive",
-          title: "Failed to load products",
-          description: error.message,
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, [userProfile, toast]);
-
-  // Fetch schemes from Supabase
-  useEffect(() => {
-    const fetchSchemes = async () => {
-      if (!userProfile) return;
-      
-      try {
-        // Using as const to specify the exact table name
-        const tableName = "schemes" as const;
-        const { data: rawData, error } = await supabase
-          .from(tableName)
-          .select('*');
-          
-        if (error) throw error;
-        
-        // Convert database schemes to our application GovScheme format
-        const dbSchemes = rawData as DatabaseScheme[];
-        const schemes: GovScheme[] = dbSchemes.map(scheme => {
-          // Parse eligibility_criteria JSON
-          const criteria = scheme.eligibility_criteria as Record<string, any>;
-          
-          return {
-            id: scheme.id,
-            title: scheme.title,
-            description: scheme.description,
-            eligibility_criteria: {
-              minIncome: criteria?.minIncome,
-              maxIncome: criteria?.maxIncome,
-              eligibleOccupations: criteria?.eligibleOccupations,
-              eligibleLocations: criteria?.eligibleLocations,
-              eligibleCategories: criteria?.eligibleCategories,
-              minAge: criteria?.minAge,
-              maxAge: criteria?.maxAge,
-            },
-            benefits: scheme.benefits,
-            application_url: scheme.application_url,
-            created_at: scheme.created_at
-          };
-        });
-        
-        // Filter schemes based on user profile criteria
-        if (schemes && userProfile.role === 'entrepreneur') {
-          const filteredSchemes = schemes.filter(scheme => {
-            const criteria = scheme.eligibility_criteria;
-            if (!criteria) return true;
-            
-            // Check income criteria
-            if (criteria.maxIncome && (userProfile as any).familyIncome > criteria.maxIncome) {
-              return false;
-            }
-            
-            // Check occupation criteria
-            if (criteria.eligibleOccupations && 
-                !criteria.eligibleOccupations.includes((userProfile as any).occupation)) {
-              return false;
-            }
-            
-            return true;
-          });
-          
-          setEligibleSchemes(filteredSchemes);
-        }
-      } catch (error: any) {
-        console.error('Error fetching schemes:', error.message);
-      }
-    };
-
-    fetchSchemes();
-  }, [userProfile]);
-
-  const onSubmitProduct = async (data: z.infer<typeof productSchema>) => {
-    if (!userProfile) return;
+  // Toggle hub manager permission
+  const handleTogglePermission = async () => {
+    const newPermissionValue = !hubManagerPermission;
+    setHubManagerPermission(newPermissionValue);
     
-    setIsSubmitting(true);
-    
-    try {
-      // Using as const to specify the exact table name
-      const tableName = "products" as const;
-      const { error } = await supabase
-        .from(tableName)
-        .insert({
-          owner_id: userProfile.id,
-          name: data.name,
-          description: data.description,
-          price: data.price,
-          category: data.category,
-          location: data.location,
-          images: [],
-          status: 'active'
+    if (userProfile && userProfile.role === 'entrepreneur') {
+      try {
+        await updateUserProfile({
+          ...userProfile,
+          hubManagerPermission: newPermissionValue
         });
-        
-      if (error) throw error;
-      
-      toast({
-        title: "Product added",
-        description: "Your product has been successfully added.",
-      });
-      
-      // Reload products
-      const { data: newProducts, error: fetchError } = await supabase
-        .from(tableName)
-        .select('*')
-        .eq('owner_id', userProfile.id);
-        
-      if (fetchError) throw fetchError;
-      
-      setProducts(newProducts as Product[]);
-      setIsProductDialogOpen(false);
-      form.reset();
-    } catch (error: any) {
-      console.error('Error adding product:', error.message);
-      toast({
-        variant: "destructive",
-        title: "Failed to add product",
-        description: error.message,
-      });
-    } finally {
-      setIsSubmitting(false);
+      } catch (error) {
+        console.error("Failed to update permission:", error);
+        // Revert UI state on error
+        setHubManagerPermission(!newPermissionValue);
+      }
     }
-  };
-
-  const playVoiceGuidance = (text: string) => {
-    // In a real app, this would use a text-to-speech API
-    console.log("Playing voice guidance:", text);
-    toast({
-      title: "Voice Guidance",
-      description: "Playing: " + text,
-    });
   };
 
   return (
@@ -218,346 +127,264 @@ const EntrepreneurDashboard = () => {
         </TabsList>
         
         <TabsContent value="products" className="mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Add product card */}
-            <Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen}>
-              <DialogTrigger asChild>
-                <Card className="border-dashed border-2 cursor-pointer hover:bg-accent/10 transition-colors">
-                  <CardContent className="p-6 flex flex-col items-center justify-center h-full min-h-[200px]">
-                    <Plus className="h-12 w-12 text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-medium mb-2">{t('dashboard.entrepreneur.addProduct')}</h3>
-                    <p className="text-sm text-muted-foreground text-center mb-4">
-                      {t('dashboard.entrepreneur.addProductDescription')}
-                    </p>
-                  </CardContent>
-                </Card>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[500px]">
-                <DialogHeader>
-                  <DialogTitle>{t('dashboard.entrepreneur.addProductTitle')}</DialogTitle>
-                  <DialogDescription>
-                    {t('dashboard.entrepreneur.addProductDialogDescription')}
-                  </DialogDescription>
-                </DialogHeader>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmitProduct)} className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Product Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter product name" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Description</FormLabel>
-                          <FormControl>
-                            <Textarea placeholder="Describe your product" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="price"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Price (₹)</FormLabel>
-                            <FormControl>
-                              <Input type="number" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="category"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Category</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select category" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="Handicrafts">Handicrafts</SelectItem>
-                                <SelectItem value="Textiles">Textiles</SelectItem>
-                                <SelectItem value="Food">Food</SelectItem>
-                                <SelectItem value="Jewelry">Jewelry</SelectItem>
-                                <SelectItem value="Home Decor">Home Decor</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <FormField
-                      control={form.control}
-                      name="location"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Location</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Your location" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <DialogFooter>
-                      <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? "Adding..." : "Add Product"}
-                      </Button>
-                    </DialogFooter>
-                  </form>
-                </Form>
-              </DialogContent>
-            </Dialog>
-            
-            {/* Product cards */}
-            {products.map(product => (
-              <Card key={product.id} className="overflow-hidden">
-                <div className="aspect-square bg-muted flex items-center justify-center">
-                  {product.images && product.images.length > 0 ? (
-                    <img 
-                      src={product.images[0]} 
-                      alt={product.name} 
-                      className="h-full w-full object-cover" 
-                    />
-                  ) : (
-                    <ShoppingBag className="h-12 w-12 text-muted-foreground" />
-                  )}
-                </div>
-                <CardHeader>
-                  <CardTitle>{product.name}</CardTitle>
-                  <CardDescription className="line-clamp-2">{product.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">₹{product.price}</span>
-                    <Button variant="outline" size="sm">
-                      {t('dashboard.entrepreneur.edit')}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            
-            {products.length === 0 && !isLoading && (
-              <div className="col-span-full text-center py-6 text-muted-foreground">
-                {t('dashboard.entrepreneur.noProducts')}
-              </div>
-            )}
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="training" className="mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>{t('dashboard.entrepreneur.training.voice')}</CardTitle>
-                <CardDescription>
-                  {t('dashboard.entrepreneur.training.voiceDescription')}
-                </CardDescription>
+                <CardTitle>{t('dashboard.entrepreneur.addProduct')}</CardTitle>
+                <CardDescription>{t('dashboard.entrepreneur.addProductDescription')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {[
-                    'marketingBasics', 
-                    'productPricing', 
-                    'customerService'
-                  ].map((module, index) => (
-                    <div key={index} className="flex items-center justify-between border p-4 rounded-md">
-                      <div className="flex items-center">
-                        <School className="h-5 w-5 mr-3 text-primary" />
-                        <span>{t(`dashboard.entrepreneur.training.modules.${module}`)}</span>
-                      </div>
-                      <Button size="sm" variant="ghost" onClick={() => 
-                        playVoiceGuidance(t(`dashboard.entrepreneur.training.modules.${module}`))
-                      }>
-                        <Play className="h-4 w-4 mr-1" />
-                        {t('dashboard.entrepreneur.training.play')}
-                      </Button>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="product-name">Product Name</Label>
+                      <Input id="product-name" placeholder="Enter product name" />
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('dashboard.entrepreneur.training.whatsapp')}</CardTitle>
-                <CardDescription>
-                  {t('dashboard.entrepreneur.training.whatsappDescription')}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="border rounded-md p-4 space-y-4">
-                  <p className="text-sm">{t('dashboard.entrepreneur.training.whatsappInstructions')}</p>
-                  <Button className="w-full">
-                    {t('dashboard.entrepreneur.training.subscribe')}
+                    <div className="space-y-2">
+                      <Label htmlFor="product-price">Price (₹)</Label>
+                      <Input id="product-price" type="number" placeholder="Enter price" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="product-category">Category</Label>
+                      <Input id="product-category" placeholder="e.g. Handicrafts, Textiles" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="product-image">Product Image</Label>
+                      <Input id="product-image" type="file" className="cursor-pointer" accept="image/*" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="product-description">Description</Label>
+                    <Textarea 
+                      id="product-description" 
+                      placeholder="Describe your product"
+                      rows={3}
+                    />
+                  </div>
+                  <Button className="w-full sm:w-auto">
+                    <Plus className="h-4 w-4 mr-2" />
+                    {t('dashboard.entrepreneur.addProductButton')}
                   </Button>
                 </div>
               </CardContent>
             </Card>
+            
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>My Products</CardTitle>
+                    <CardDescription>All your listed products appear here</CardDescription>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="hub-permission"
+                      checked={hubManagerPermission}
+                      onCheckedChange={handleTogglePermission}
+                    />
+                    <Label htmlFor="hub-permission">{t('dashboard.entrepreneur.hubPermission')}</Label>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {products.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {products.map((product) => (
+                      <Card key={product.id} className="overflow-hidden">
+                        <div className="aspect-video w-full overflow-hidden">
+                          <img 
+                            src={product.images[0]} 
+                            alt={product.name} 
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <CardContent className="pt-4">
+                          <h3 className="font-semibold text-lg">{product.name}</h3>
+                          <div className="flex items-center justify-between mt-1">
+                            <p className="text-muted-foreground text-sm">{product.category}</p>
+                            <p className="font-medium">₹{product.price}</p>
+                          </div>
+                          <p className="text-sm mt-2 line-clamp-2">{product.description}</p>
+                        </CardContent>
+                        <CardFooter className="border-t pt-4 flex justify-between">
+                          <Button variant="outline" size="sm">
+                            <PenSquare className="h-4 w-4 mr-1" />
+                            {t('dashboard.entrepreneur.edit')}
+                          </Button>
+                        </CardFooter>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 border rounded-lg bg-muted/20">
+                    <p className="text-muted-foreground mb-2">{t('dashboard.entrepreneur.noProducts')}</p>
+                    <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                      {t('dashboard.entrepreneur.productsDescription')}
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
         
+        <TabsContent value="training" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Training Resources</CardTitle>
+              <CardDescription>Access voice-based training and educational content</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {mockTrainings.map((training) => (
+                  <Card key={training.id} className="overflow-hidden">
+                    <div className="flex flex-col md:flex-row">
+                      <div className="flex items-center justify-center bg-primary/10 p-6 md:w-40">
+                        <Headphones className="h-12 w-12 text-primary" />
+                      </div>
+                      <CardContent className="p-4 md:p-6 flex-1">
+                        <div className="flex items-start justify-between flex-col md:flex-row">
+                          <div>
+                            <h3 className="font-semibold text-lg">{training.title}</h3>
+                            <p className="text-sm text-muted-foreground mt-1">{training.description}</p>
+                            <div className="flex items-center space-x-4 mt-2">
+                              <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                                {training.language}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {training.duration}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {training.date}
+                              </span>
+                            </div>
+                          </div>
+                          <Button variant="outline" size="sm" className="mt-4 md:mt-0">
+                            Listen Now
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
         <TabsContent value="schemes" className="mt-6">
-          <div className="mb-6">
-            <h3 className="text-xl font-semibold mb-2">{t('dashboard.entrepreneur.schemes.title')}</h3>
-            <p className="text-muted-foreground">{t('dashboard.entrepreneur.schemes.description')}</p>
-          </div>
-          
-          <div className="space-y-6">
-            {eligibleSchemes.map((scheme) => (
-              <Card key={scheme.id}>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle>{scheme.title}</CardTitle>
-                      <CardDescription className="mt-1">{scheme.description}</CardDescription>
-                    </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => playVoiceGuidance(`${scheme.title}. ${scheme.description}`)}
-                    >
-                      <Play className="h-4 w-4 mr-1" /> 
-                      {t('dashboard.entrepreneur.schemes.listen')}
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="font-medium mb-2">{t('dashboard.entrepreneur.schemes.benefits')}</h4>
-                      <ul className="list-disc pl-5 space-y-1">
-                        {scheme.benefits.map((benefit, index) => (
-                          <li key={index} className="text-sm">{benefit}</li>
-                        ))}
-                      </ul>
-                    </div>
-                    
-                    <div className="flex justify-between items-center pt-2">
-                      <Button variant="outline" size="sm" asChild>
-                        <a href={scheme.application_url} target="_blank" rel="noopener noreferrer">
-                          <FileText className="h-4 w-4 mr-2" />
-                          {t('dashboard.entrepreneur.schemes.apply')}
+          <Card>
+            <CardHeader>
+              <CardTitle>Government Schemes & Support</CardTitle>
+              <CardDescription>Access financial and business support offered by government</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {mockSchemes.map((scheme) => (
+                  <Card key={scheme.id} className="overflow-hidden">
+                    <CardHeader>
+                      <div className="flex items-center">
+                        <FileText className="h-5 w-5 mr-2 text-primary" />
+                        <CardTitle className="text-lg">{scheme.title}</CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm mb-3">{scheme.description}</p>
+                      <div className="space-y-3">
+                        <div>
+                          <h4 className="text-sm font-medium">Eligibility:</h4>
+                          <p className="text-sm text-muted-foreground">{scheme.eligibility}</p>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-medium">Benefits:</h4>
+                          <ul className="list-disc list-inside text-sm text-muted-foreground ml-2">
+                            {scheme.benefits.map((benefit, index) => (
+                              <li key={index}>{benefit}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    </CardContent>
+                    <CardFooter className="border-t pt-4">
+                      <Button asChild>
+                        <a href={scheme.applicationUrl} target="_blank" rel="noopener noreferrer">
+                          Apply Now
                         </a>
                       </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            
-            {eligibleSchemes.length === 0 && !isLoading && (
-              <div className="text-center py-12">
-                <p>{t('dashboard.entrepreneur.schemes.noSchemes')}</p>
+                    </CardFooter>
+                  </Card>
+                ))}
               </div>
-            )}
-          </div>
+            </CardContent>
+          </Card>
         </TabsContent>
         
         <TabsContent value="profile" className="mt-6">
           <Card>
             <CardHeader>
-              <CardTitle>{t('dashboard.entrepreneur.profile.title')}</CardTitle>
-              <CardDescription>
-                {t('dashboard.entrepreneur.profile.description')}
-              </CardDescription>
+              <CardTitle>{t('dashboard.entrepreneur.tabs.profile')}</CardTitle>
+              <CardDescription>View and edit your profile information</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-1">
-                      {t('dashboard.entrepreneur.profile.name')}
-                    </h4>
-                    <p className="font-medium">{userProfile?.name}</p>
+              <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
+                  <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
+                    <User className="h-12 w-12 text-primary" />
                   </div>
-                  
                   <div>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-1">
-                      {t('dashboard.entrepreneur.profile.email')}
-                    </h4>
-                    <p className="font-medium">{userProfile?.email}</p>
+                    <h3 className="text-xl font-medium">{userProfile?.name}</h3>
+                    <p className="text-muted-foreground">{userProfile?.email}</p>
+                    {userProfile?.role === 'entrepreneur' && 'occupation' in (userProfile as any) && (
+                      <p className="mt-1">{(userProfile as any).occupation}</p>
+                    )}
                   </div>
-                  
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-1">
-                      {t('dashboard.entrepreneur.profile.phone')}
-                    </h4>
-                    <p className="font-medium">{userProfile?.phone || "-"}</p>
-                  </div>
-                  
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-1">
-                      {t('dashboard.entrepreneur.profile.language')}
-                    </h4>
-                    <p className="font-medium">{userProfile?.preferredLanguage === 'en' ? 'English' : 
-                      userProfile?.preferredLanguage === 'hi' ? 'हिन्दी (Hindi)' : 
-                      userProfile?.preferredLanguage === 'mr' ? 'मराठी (Marathi)' : 
-                      userProfile?.preferredLanguage}</p>
-                  </div>
-                  
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
                   {userProfile?.role === 'entrepreneur' && (
                     <>
                       <div>
-                        <h4 className="text-sm font-medium text-muted-foreground mb-1">
-                          {t('dashboard.entrepreneur.profile.aadhar')}
-                        </h4>
-                        <p className="font-medium">{(userProfile as any).aadharNumber ? 
-                          (userProfile as any).aadharNumber.replace(/(\d{4})(\d{4})(\d{4})/, '$1-$2-$3') : 
-                          "-"}</p>
+                        <Label className="text-sm text-muted-foreground">Aadhar Number</Label>
+                        <p className="font-medium">
+                          {'aadharNumber' in (userProfile as any) ? 
+                            (userProfile as any).aadharNumber : 
+                            "-"}
+                        </p>
                       </div>
                       
                       <div>
-                        <h4 className="text-sm font-medium text-muted-foreground mb-1">
-                          {t('dashboard.entrepreneur.profile.occupation')}
-                        </h4>
-                        <p className="font-medium">{(userProfile as any).occupation || "-"}</p>
+                        <Label className="text-sm text-muted-foreground">Family Income</Label>
+                        <p className="font-medium">
+                          {'familyIncome' in (userProfile as any) ? 
+                            `₹${(userProfile as any).familyIncome.toLocaleString()}` : 
+                            "-"}
+                        </p>
                       </div>
                       
                       <div>
-                        <h4 className="text-sm font-medium text-muted-foreground mb-1">
-                          {t('dashboard.entrepreneur.profile.income')}
-                        </h4>
-                        <p className="font-medium">{(userProfile as any).familyIncome ? 
-                          `₹${(userProfile as any).familyIncome.toLocaleString()}` : 
-                          "-"}</p>
+                        <Label className="text-sm text-muted-foreground">Preferred Language</Label>
+                        <p className="font-medium">
+                          {userProfile.preferredLanguage === 'en' ? 'English' : 
+                           userProfile.preferredLanguage === 'hi' ? 'हिन्दी' : 
+                           userProfile.preferredLanguage === 'mr' ? 'मराठी' : 
+                           userProfile.preferredLanguage}
+                        </p>
                       </div>
                       
                       <div>
-                        <h4 className="text-sm font-medium text-muted-foreground mb-1">
-                          {t('dashboard.entrepreneur.profile.hubManagerPermission')}
-                        </h4>
-                        <p className="font-medium">{(userProfile as any).hubManagerPermission ? 
-                          'Granted' : 'Not Granted'}</p>
+                        <Label className="text-sm text-muted-foreground">Hub Manager Permission</Label>
+                        <p className="font-medium">
+                          {hubManagerPermission ? 'Enabled' : 'Disabled'}
+                        </p>
                       </div>
                     </>
                   )}
                 </div>
                 
-                <div className="pt-4">
+                <div className="flex justify-start pt-4">
                   <Button>
-                    {t('dashboard.entrepreneur.profile.edit')}
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit Profile
                   </Button>
                 </div>
               </div>
