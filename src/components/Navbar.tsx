@@ -1,113 +1,128 @@
 
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, User, LogOut } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import LanguageSelector from "./LanguageSelector";
 import { useTranslation } from 'react-i18next';
-import LanguageSelector from './LanguageSelector';
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, signOut } = useAuth();
   const { t } = useTranslation();
+  const { isAuthenticated, signOut, userProfile } = useAuth();
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
-  const navItems = [
-    { name: t('navbar.home'), href: '/' },
-    { name: t('navbar.features'), href: '#features' },
-    { name: t('navbar.marketplace'), href: '#marketplace' },
-    { name: t('navbar.contact'), href: '#contact' },
-  ];
-
-  const handleSignOut = async () => {
-    await signOut();
-  };
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  const closeMenu = () => setIsMenuOpen(false);
 
   return (
-    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
-      <div className="container mx-auto px-4 flex justify-between items-center h-16">
-        <Link to="/" className="flex items-center space-x-2">
-          <span className="font-display font-bold text-2xl text-nektech-blue">NEK<span className="text-nektech-orange">TECH</span></span>
+    <header className="z-40 bg-background border-b border-border sticky top-0">
+      <div className="container px-4 py-3 flex items-center justify-between">
+        <Link to="/" className="flex-shrink-0" onClick={closeMenu}>
+          <span className="font-display text-2xl font-bold text-foreground">NEK<span className="text-nektech-orange">TECH</span></span>
         </Link>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-4 lg:space-x-8">
-          {navItems.map((item) => (
-            <a
-              key={item.name}
-              href={item.href}
-              className="text-foreground hover:text-nektech-orange transition-colors font-medium"
-            >
-              {item.name}
-            </a>
-          ))}
-          
-          <LanguageSelector />
-          
-          {user ? (
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" className="flex items-center gap-2">
-                <User size={18} />
-                <span className="hidden lg:inline">{user.email?.split('@')[0]}</span>
-              </Button>
-              <Button variant="outline" className="flex items-center gap-2" onClick={handleSignOut}>
-                <LogOut size={18} />
-                <span className="hidden lg:inline">{t('navbar.signOut')}</span>
-              </Button>
-            </div>
-          ) : (
-            <Link to="/auth">
-              <Button className="btn-primary">{t('navbar.signIn')}</Button>
-            </Link>
-          )}
+        {/* Desktop menu */}
+        <nav className="hidden md:flex items-center gap-6">
+          <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            {t('navbar.home')}
+          </Link>
+          <Link to="/#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            {t('navbar.features')}
+          </Link>
+          <Link to="/#marketplace" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            {t('navbar.marketplace')}
+          </Link>
+          <Link to="/#contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            {t('navbar.contact')}
+          </Link>
         </nav>
 
-        {/* Mobile Menu Button */}
-        <div className="md:hidden flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-2">
           <LanguageSelector />
-          <button
-            className="p-2 rounded-md text-foreground"
-            onClick={toggleMenu}
-            aria-label="Toggle menu"
-          >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          {isAuthenticated ? (
+            <>
+              <Link to="/dashboard">
+                <Button variant="ghost" size="sm">
+                  {t('navbar.dashboard')}
+                </Button>
+              </Link>
+              <Button variant="ghost" size="sm" onClick={signOut}>
+                {t('navbar.signOut')}
+              </Button>
+            </>
+          ) : (
+            <Link to="/auth">
+              <Button className="font-medium">
+                {t('navbar.signIn')}
+              </Button>
+            </Link>
+          )}
         </div>
+
+        {/* Mobile menu button */}
+        <button className="md:hidden" onClick={toggleMenu}>
+          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </div>
 
-      {/* Mobile Navigation */}
+      {/* Mobile menu drawer */}
       {isMenuOpen && (
         <div className="md:hidden bg-background border-b border-border">
-          <div className="container mx-auto px-4 py-4 flex flex-col space-y-4">
-            {navItems.map((item) => (
-              <a
-                key={item.name}
-                href={item.href}
-                className="text-foreground hover:text-nektech-orange transition-colors font-medium py-2"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {item.name}
-              </a>
-            ))}
-            {user ? (
-              <>
-                <div className="flex items-center gap-2 py-2">
-                  <User size={18} className="text-nektech-blue" />
-                  <span>{user.email}</span>
-                </div>
-                <Button className="w-full" variant="outline" onClick={handleSignOut}>
-                  {t('navbar.signOut')}
-                </Button>
-              </>
-            ) : (
-              <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
-                <Button className="btn-primary w-full">{t('navbar.signIn')}</Button>
-              </Link>
-            )}
+          <div className="container px-4 py-4 flex flex-col gap-4">
+            <Link 
+              to="/" 
+              className="text-foreground font-medium py-2"
+              onClick={closeMenu}
+            >
+              {t('navbar.home')}
+            </Link>
+            <Link 
+              to="/#features" 
+              className="text-foreground font-medium py-2"
+              onClick={closeMenu}
+            >
+              {t('navbar.features')}
+            </Link>
+            <Link 
+              to="/#marketplace" 
+              className="text-foreground font-medium py-2"
+              onClick={closeMenu}
+            >
+              {t('navbar.marketplace')}
+            </Link>
+            <Link 
+              to="/#contact" 
+              className="text-foreground font-medium py-2"
+              onClick={closeMenu}
+            >
+              {t('navbar.contact')}
+            </Link>
+            
+            <div className="flex items-center gap-2 pt-2">
+              <LanguageSelector />
+              {isAuthenticated ? (
+                <>
+                  <Link to="/dashboard" onClick={closeMenu}>
+                    <Button variant="ghost" size="sm">
+                      {t('navbar.dashboard')}
+                    </Button>
+                  </Link>
+                  <Button variant="ghost" size="sm" onClick={() => {
+                    signOut();
+                    closeMenu();
+                  }}>
+                    {t('navbar.signOut')}
+                  </Button>
+                </>
+              ) : (
+                <Link to="/auth" onClick={closeMenu}>
+                  <Button className="font-medium">
+                    {t('navbar.signIn')}
+                  </Button>
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       )}

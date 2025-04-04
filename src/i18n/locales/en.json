@@ -6,13 +6,15 @@
     "marketplace": "Marketplace",
     "contact": "Contact",
     "signIn": "Sign In",
-    "signOut": "Sign Out"
+    "signOut": "Sign Out",
+    "dashboard": "Dashboard"
   },
   "hero": {
     "title": "One Missed Call to Transform a Life",
     "subtitle": "Empowering rural women entrepreneurs through technology that works without smartphones or internet. Building communities and changing lives.",
     "getStarted": "Get Started",
     "learnMore": "Learn More",
+    "dashboard": "Go to Dashboard",
     "imageAlt": "Rural women entrepreneurs"
   },
   "features": {
@@ -233,7 +235,14 @@
   "auth": {
     "validation": {
       "email": "Please enter a valid email address",
-      "password": "Password must be at least 6 characters"
+      "password": "Password must be at least 6 characters",
+      "name": "Please enter your name",
+      "aadhar": "Aadhar number must be 12 digits",
+      "occupation": "Please enter your occupation",
+      "hubName": "Please enter the hub name",
+      "location": "Please enter the location",
+      "orgName": "Please enter the organization name",
+      "regNumber": "Please enter the registration number"
     },
     "login": {
       "title": "Welcome Back",
@@ -259,12 +268,254 @@
       "emailPlaceholder": "Your email",
       "password": "Password",
       "passwordPlaceholder": "Your password",
+      "name": "Full Name",
+      "namePlaceholder": "Your full name",
+      "phone": "Phone Number",
+      "phonePlaceholder": "Your phone number (optional)",
+      "language": "Preferred Language",
+      "selectLanguage": "Select language",
+      "userType": "User Type",
+      "selectUserType": "Select user type",
       "processing": "Processing...",
       "signIn": "Sign In",
-      "signUp": "Sign Up"
+      "signUp": "Sign Up",
+      "entrepreneur": {
+        "aadhar": "Aadhar Number",
+        "aadharPlaceholder": "12-digit Aadhar number",
+        "occupation": "Occupation",
+        "occupationPlaceholder": "Your occupation or craft",
+        "income": "Annual Family Income (₹)",
+        "incomePlaceholder": "Enter amount in rupees"
+      },
+      "hubManager": {
+        "hubName": "Hub Name",
+        "hubNamePlaceholder": "Name of your hub",
+        "location": "Hub Location",
+        "locationPlaceholder": "City and state of your hub"
+      },
+      "buyer": {
+        "company": "Company Name",
+        "companyPlaceholder": "Your company name (optional)",
+        "businessType": "Business Type",
+        "businessTypePlaceholder": "Type of business (optional)"
+      },
+      "csr": {
+        "organization": "Organization Name",
+        "organizationPlaceholder": "Your CSR organization name",
+        "registrationNumber": "Registration Number",
+        "registrationNumberPlaceholder": "Organization registration number"
+      }
+    },
+    "roles": {
+      "entrepreneur": "Woman Entrepreneur",
+      "hubManager": "Hub Manager",
+      "buyer": "Buyer/Wholesaler",
+      "csr": "CSR Institution"
     },
     "switchToSignup": "Need an account? Sign up",
     "switchToLogin": "Have an account? Sign in"
+  },
+  "dashboard": {
+    "welcome": "Welcome",
+    "loading": "Loading your dashboard...",
+    "roleDescription": "You are logged in as a {role}",
+    "roleNotConfigured": "Your user role is not configured",
+    "roles": {
+      "entrepreneur": "woman entrepreneur",
+      "hub_manager": "hub manager",
+      "buyer": "buyer/wholesaler",
+      "csr": "CSR institution",
+      "unknown": "user"
+    },
+    "entrepreneur": {
+      "tabs": {
+        "products": "My Products",
+        "training": "Training",
+        "schemes": "Gov. Schemes",
+        "profile": "My Profile"
+      },
+      "addProduct": "Add New Product",
+      "addProductDescription": "List your handcrafted products to reach more customers",
+      "addProductButton": "Upload Product",
+      "sampleProduct": "Sample Product",
+      "sampleCategory": "Handicrafts",
+      "edit": "Edit",
+      "training": {
+        "voice": "Voice Training Modules",
+        "voiceDescription": "Learn through voice-based training in your language",
+        "whatsapp": "WhatsApp Training",
+        "whatsappDescription": "Receive training materials on WhatsApp",
+        "whatsappInstructions": "Subscribe to receive daily business tips and training via WhatsApp in your preferred language",
+        "subscribe": "Subscribe to WhatsApp Training",
+        "play": "Play",
+        "modules": {
+          "marketingBasics": "Marketing Basics",
+          "productPricing": "Product Pricing Strategies",
+          "customerService": "Customer Service Excellence"
+        }
+      },
+      "schemes": {
+        "title": "Government Schemes",
+        "description": "Government schemes you may be eligible for based on your profile",
+        "benefits": "Benefits",
+        "apply": "Apply Now",
+        "listen": "Listen",
+        "noSchemes": "No eligible schemes found. Please update your profile for better recommendations."
+      },
+      "profile": {
+        "title": "My Profile",
+        "description": "Your personal and business information",
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone",
+        "language": "Preferred Language",
+        "aadhar": "Aadhar Number",
+        "occupation": "Occupation",
+        "income": "Annual Family Income",
+        "edit": "Edit Profile"
+      }
+    },
+    "hubManager": {
+      "tabs": {
+        "entrepreneurs": "Entrepreneurs",
+        "wholesalers": "Wholesalers",
+        "profile": "My Profile"
+      },
+      "search": "Search...",
+      "entrepreneurs": {
+        "title": "Women Entrepreneurs",
+        "description": "Women entrepreneurs registered with your hub",
+        "name": "Name",
+        "occupation": "Occupation",
+        "products": "Products",
+        "permission": "Permission",
+        "actions": "Actions",
+        "view": "View details",
+        "noResults": "No entrepreneurs found"
+      },
+      "wholesalers": {
+        "title": "Wholesalers Directory",
+        "description": "Connect entrepreneurs with these wholesalers",
+        "contact": "Contact",
+        "noResults": "No wholesalers found"
+      },
+      "profile": {
+        "title": "Hub Profile",
+        "description": "Your hub information and settings",
+        "name": "Manager Name",
+        "email": "Email",
+        "phone": "Phone",
+        "hubName": "Hub Name",
+        "location": "Location",
+        "entrepreneursCount": "Entrepreneurs Count",
+        "edit": "Edit Profile"
+      }
+    },
+    "buyer": {
+      "tabs": {
+        "marketplace": "Marketplace",
+        "orders": "My Orders",
+        "profile": "My Profile"
+      },
+      "marketplace": {
+        "title": "Product Marketplace",
+        "searchPlaceholder": "Search products...",
+        "selectCategory": "Select Category",
+        "selectLocation": "Select Location",
+        "sortBy": "Sort By",
+        "sortNewest": "Newest First",
+        "sortPriceAsc": "Price: Low to High",
+        "sortPriceDesc": "Price: High to Low",
+        "resetFilters": "Reset Filters",
+        "by": "By",
+        "contact": "Contact",
+        "inquiry": "Inquire",
+        "noProducts": "No products found matching your filters"
+      },
+      "orders": {
+        "title": "My Orders",
+        "description": "Track and manage your orders",
+        "empty": "You haven't placed any orders yet",
+        "browseProducts": "Browse Products"
+      },
+      "profile": {
+        "title": "My Profile",
+        "description": "Your account information",
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone",
+        "company": "Company Name",
+        "businessType": "Business Type",
+        "edit": "Edit Profile"
+      }
+    },
+    "csr": {
+      "tabs": {
+        "dashboard": "Dashboard",
+        "initiatives": "Initiatives",
+        "reports": "Reports",
+        "profile": "Profile"
+      },
+      "metrics": {
+        "entrepreneurs": "Women Entrepreneurs",
+        "products": "Active Products",
+        "revenue": "Monthly Revenue",
+        "initiatives": "Active Initiatives"
+      },
+      "charts": {
+        "growth": "Growth Metrics",
+        "growthDescription": "Progress of entrepreneurs and products over time",
+        "funding": "Funding Allocation",
+        "fundingDescription": "How initiative funding is allocated"
+      },
+      "activeInitiatives": "Active Initiatives",
+      "activeInitiativesDescription": "Currently running initiatives and their progress",
+      "viewDetails": "View Details",
+      "funding": "₹{current} of ₹{goal} funded",
+      "beneficiaries": "Beneficiaries",
+      "timeline": "Timeline",
+      "initiatives": {
+        "title": "Manage Initiatives",
+        "description": "Create and manage your CSR initiatives",
+        "newInitiative": "New Initiative",
+        "manage": "Manage",
+        "completed": "Completed",
+        "active": "Active"
+      },
+      "reports": {
+        "title": "Impact Reports",
+        "description": "Download reports for your CSR compliance and tax benefits",
+        "download": "Download",
+        "types": {
+          "monthlyImpact": {
+            "title": "Monthly Impact Report",
+            "description": "Summary of impact metrics for the current month"
+          },
+          "quarterlyAnalytics": {
+            "title": "Quarterly Analytics",
+            "description": "Detailed quarterly analysis of all initiatives"
+          },
+          "annualReport": {
+            "title": "Annual CSR Report",
+            "description": "Comprehensive annual report suitable for compliance"
+          },
+          "taxBenefits": {
+            "title": "Tax Benefits Statement",
+            "description": "Report for CSR tax benefits under Indian laws"
+          }
+        }
+      },
+      "profile": {
+        "title": "Organization Profile",
+        "description": "Your CSR organization information",
+        "name": "Contact Person",
+        "email": "Email",
+        "phone": "Phone",
+        "organization": "Organization Name",
+        "registrationNumber": "Registration Number",
+        "edit": "Edit Profile"
+      }
+    }
   },
   "notFound": {
     "message": "Oops! Page not found",

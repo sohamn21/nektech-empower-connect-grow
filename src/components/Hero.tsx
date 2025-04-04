@@ -3,9 +3,11 @@ import { ArrowRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from "@/contexts/AuthContext";
 
 const Hero = () => {
   const { t } = useTranslation();
+  const { isAuthenticated } = useAuth();
   
   return (
     <section className="py-12 md:py-24 lg:py-32 bg-gradient-to-br from-nektech-light to-background overflow-hidden">
@@ -18,11 +20,19 @@ const Hero = () => {
             {t('hero.subtitle')}
           </p>
           <div className="flex flex-wrap gap-4 pt-4">
-            <Link to="/auth">
-              <Button className="btn-primary" size="lg">
-                {t('hero.getStarted')} <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
+            {isAuthenticated ? (
+              <Link to="/dashboard">
+                <Button className="btn-primary" size="lg">
+                  {t('hero.dashboard')} <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            ) : (
+              <Link to="/auth">
+                <Button className="btn-primary" size="lg">
+                  {t('hero.getStarted')} <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            )}
             <Button variant="outline" size="lg">
               {t('hero.learnMore')}
             </Button>

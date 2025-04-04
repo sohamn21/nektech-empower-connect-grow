@@ -2,12 +2,18 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session, User } from "@supabase/supabase-js";
+import { UserProfile, UserRole } from "@/types";
+import { useToast } from "@/components/ui/use-toast";
 
 type AuthContextType = {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
+  userProfile: UserProfile | null;
   signOut: () => Promise<void>;
+  updateUserProfile: (profile: Partial<UserProfile>) => Promise<void>;
+  isAuthenticated: boolean;
+  userRole: UserRole | null;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -16,6 +22,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     const setupAuth = async () => {
@@ -26,7 +34,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         (event, session) => {
           setSession(session);
           setUser(session?.user ?? null);
-          setIsLoading(false);
+          
+          if (session?.user) {
+            fetchUserProfile(session.user.id);
+          } else {
+            setUserProfile(null);
+          }
         }
       );
       
@@ -34,6 +47,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const { data: { session: currentSession } } = await supabase.auth.getSession();
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
+      
+      if (currentSession?.user) {
+        await fetchUserProfile(currentSession.user.id);
+      }
+      
       setIsLoading(false);
       
       return () => {
@@ -44,12 +62,65 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setupAuth();
   }, []);
   
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+        
+      if (error) throw error;
+      
+      setUserProfile(data as UserProfile);
+    } catch (error: any) {
+      console.error('Error fetching user profile:', error.message);
+      setUserProfile(null);
+    }
+  };
+  
+  const updateUserProfile = async (profile: Partial<UserProfile>) => {
+    if (!user) return;
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update(profile)
+        .eq('id', user.id);
+        
+      if (error) throw error;
+      
+      setUserProfile(prev => prev ? { ...prev, ...profile } : null);
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been successfully updated.",
+      });
+    } catch (error: any) {
+      console.error('Error updating profile:', error.message);
+      toast({
+        variant: "destructive",
+        title: "Update failed",
+        description: error.message,
+      });
+    }
+  };
+  
   const signOut = async () => {
     await supabase.auth.signOut();
+    setUserProfile(null);
   };
   
   return (
-    <AuthContext.Provider value={{ user, session, isLoading, signOut }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      session, 
+      isLoading, 
+      userProfile, 
+      signOut, 
+      updateUserProfile,
+      isAuthenticated: !!user,
+      userRole: userProfile?.role || null
+    }}>
       {children}
     </AuthContext.Provider>
   );
