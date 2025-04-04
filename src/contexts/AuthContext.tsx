@@ -64,19 +64,66 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   
   const fetchUserProfile = async (userId: string) => {
     try {
-      // Using type assertions to bypass TypeScript errors
-      const result = await (supabase as any)
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
         
-      const { data, error } = result;
-        
-      if (error) throw error;
+      if (profileError) throw profileError;
       
-      if (data) {
-        setUserProfile(data as unknown as UserProfile);
+      // Get role-specific profile data based on the user's role
+      if (profileData) {
+        let roleSpecificData = {};
+        
+        if (profileData.role === 'entrepreneur') {
+          const { data, error } = await supabase
+            .from('entrepreneur_profiles')
+            .select('*')
+            .eq('id', userId)
+            .single();
+            
+          if (!error && data) {
+            roleSpecificData = data;
+          }
+        } else if (profileData.role === 'hub_manager') {
+          const { data, error } = await supabase
+            .from('hub_manager_profiles')
+            .select('*')
+            .eq('id', userId)
+            .single();
+            
+          if (!error && data) {
+            roleSpecificData = data;
+          }
+        } else if (profileData.role === 'buyer') {
+          const { data, error } = await supabase
+            .from('buyer_profiles')
+            .select('*')
+            .eq('id', userId)
+            .single();
+            
+          if (!error && data) {
+            roleSpecificData = data;
+          }
+        } else if (profileData.role === 'csr') {
+          const { data, error } = await supabase
+            .from('csr_profiles')
+            .select('*')
+            .eq('id', userId)
+            .single();
+            
+          if (!error && data) {
+            roleSpecificData = data;
+          }
+        }
+        
+        // Combine base profile with role-specific data
+        setUserProfile({
+          ...profileData,
+          ...roleSpecificData,
+          preferredLanguage: profileData.preferred_language
+        } as UserProfile);
       }
     } catch (error: any) {
       console.error('Error fetching user profile:', error.message);
@@ -88,17 +135,47 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!user) return;
     
     try {
-      // Using type assertions to bypass TypeScript errors
-      const result = await (supabase as any)
-        .from('profiles')
-        .update(profile)
-        .eq('id', user.id);
-        
-      const { error } = result;
-        
-      if (error) throw error;
+      // Determine which properties belong to main profile and which to role-specific profile
+      const mainProfileProps: any = {};
+      const roleSpecificProps: any = {};
       
-      setUserProfile(prev => prev ? { ...prev, ...profile } : null);
+      Object.entries(profile).forEach(([key, value]) => {
+        // Mapping profile keys to database column names
+        if (['name', 'email', 'role', 'preferredLanguage'].includes(key)) {
+          if (key === 'preferredLanguage') {
+            mainProfileProps['preferred_language'] = value;
+          } else {
+            mainProfileProps[key] = value;
+          }
+        } else {
+          roleSpecificProps[key] = value;
+        }
+      });
+      
+      // Update main profile
+      if (Object.keys(mainProfileProps).length > 0) {
+        const { error } = await supabase
+          .from('profiles')
+          .update(mainProfileProps)
+          .eq('id', user.id);
+          
+        if (error) throw error;
+      }
+      
+      // Update role-specific profile
+      if (Object.keys(roleSpecificProps).length > 0 && userProfile?.role) {
+        const tableName = `${userProfile.role}_profiles`;
+        const { error } = await supabase
+          .from(tableName)
+          .update(roleSpecificProps)
+          .eq('id', user.id);
+          
+        if (error) throw error;
+      }
+      
+      // Refetch the profile to get updated data
+      await fetchUserProfile(user.id);
+      
       toast({
         title: "Profile updated",
         description: "Your profile has been successfully updated.",

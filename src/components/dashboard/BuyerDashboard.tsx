@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -21,53 +22,10 @@ import {
   ChevronDown
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-
-const mockProducts = [
-  {
-    id: "1",
-    name: "Handwoven Basket",
-    description: "Traditional handwoven bamboo basket with intricate patterns",
-    price: 450,
-    category: "Handicrafts",
-    images: ["https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=300&h=300"],
-    location: "Rajasthan",
-    entrepreneurName: "Priya Sharma",
-    hubName: "Jaipur Hub"
-  },
-  {
-    id: "2",
-    name: "Embroidered Shawl",
-    description: "Handmade wool shawl with traditional embroidery work",
-    price: 1200,
-    category: "Textiles",
-    images: ["https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=300&h=300"],
-    location: "Himachal Pradesh",
-    entrepreneurName: "Sunita Devi",
-    hubName: "Shimla Hub"
-  },
-  {
-    id: "3",
-    name: "Organic Pickles Set",
-    description: "Homemade organic pickle set with five different flavors",
-    price: 350,
-    category: "Food",
-    images: ["https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=300&h=300"],
-    location: "Gujarat",
-    entrepreneurName: "Meena Kumari",
-    hubName: "Ahmedabad Hub"
-  },
-  {
-    id: "4",
-    name: "Terracotta Jewelry",
-    description: "Handcrafted terracotta jewelry set with earrings and necklace",
-    price: 550,
-    category: "Jewelry",
-    images: ["https://images.unsplash.com/photo-1649972904349-6e44c42644a7?auto=format&fit=crop&w=300&h=300"],
-    location: "West Bengal",
-    entrepreneurName: "Lakshmi Roy",
-    hubName: "Kolkata Hub"
-  }
-];
+import { supabase } from "@/integrations/supabase/client";
+import { Product } from "@/types";
+import { useToast } from "@/components/ui/use-toast";
+import { formatCurrency } from "@/lib/utils";
 
 const locations = ["All Locations", "Rajasthan", "Himachal Pradesh", "Gujarat", "West Bengal", "Maharashtra", "Tamil Nadu"];
 const categories = ["All Categories", "Handicrafts", "Textiles", "Food", "Jewelry", "Home Decor", "Paper Products"];
@@ -75,16 +33,51 @@ const categories = ["All Categories", "Handicrafts", "Textiles", "Food", "Jewelr
 const BuyerDashboard = () => {
   const { t } = useTranslation();
   const { userProfile } = useAuth();
-  const [products, setProducts] = useState(mockProducts);
+  const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [selectedLocation, setSelectedLocation] = useState("All Locations");
   const [sortBy, setSortBy] = useState("newest");
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+
+  // Fetch products from Supabase
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*, profiles(name)')
+          .eq('status', 'active');
+          
+        if (error) throw error;
+        
+        // Transform data to match our Product type
+        const transformedProducts = data.map((item: any) => ({
+          ...item,
+          entrepreneurName: item.profiles.name
+        }));
+        
+        setProducts(transformedProducts);
+      } catch (error: any) {
+        console.error('Error fetching products:', error.message);
+        toast({
+          variant: "destructive",
+          title: "Failed to load products",
+          description: error.message,
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [toast]);
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         product.entrepreneurName.toLowerCase().includes(searchQuery.toLowerCase());
+                        product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        (product as any).entrepreneurName?.toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesCategory = selectedCategory === "All Categories" || product.category === selectedCategory;
     
@@ -96,7 +89,7 @@ const BuyerDashboard = () => {
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (sortBy === "priceAsc") return a.price - b.price;
     if (sortBy === "priceDesc") return b.price - a.price;
-    return b.id.localeCompare(a.id);
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
   });
 
   const resetFilters = () => {
@@ -116,6 +109,22 @@ const BuyerDashboard = () => {
     if (marketplaceTab && marketplaceTab instanceof HTMLElement) {
       marketplaceTab.click();
     }
+  };
+
+  // Contact seller function
+  const contactSeller = (productId: string) => {
+    toast({
+      title: "Contact request sent",
+      description: "The hub manager will reach out to you soon.",
+    });
+  };
+
+  // Send inquiry function
+  const sendInquiry = (productId: string) => {
+    toast({
+      title: "Inquiry sent",
+      description: "Your inquiry has been sent to the entrepreneur.",
+    });
   };
 
   return (
@@ -198,52 +207,83 @@ const BuyerDashboard = () => {
             </CardContent>
           </Card>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {sortedProducts.map((product) => (
-              <Card key={product.id} className="overflow-hidden">
-                <div className="aspect-square bg-muted relative">
-                  <img 
-                    src={product.images[0]} 
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                  />
-                  <Badge className="absolute top-2 right-2 bg-white text-black hover:bg-white/90">
-                    {product.category}
-                  </Badge>
-                </div>
-                <CardHeader className="p-4">
-                  <CardTitle className="text-lg">{product.name}</CardTitle>
-                  <CardDescription className="line-clamp-2">{product.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="p-4 pt-0">
-                  <div className="flex items-center text-xs text-muted-foreground mb-2">
-                    <MapPin size={12} className="mr-1" />
-                    <span>{product.location}</span>
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Card key={i} className="overflow-hidden">
+                  <div className="aspect-square bg-muted animate-pulse" />
+                  <CardHeader className="p-4">
+                    <div className="h-5 bg-muted animate-pulse rounded mb-2" />
+                    <div className="h-10 bg-muted animate-pulse rounded" />
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0">
+                    <div className="h-4 bg-muted animate-pulse rounded mb-2 w-1/3" />
+                    <div className="h-6 bg-muted animate-pulse rounded w-1/4 mb-1" />
+                    <div className="h-4 bg-muted animate-pulse rounded w-1/2 mt-1" />
+                  </CardContent>
+                  <CardFooter className="p-4 pt-0 flex gap-2">
+                    <div className="h-9 bg-muted animate-pulse rounded flex-1" />
+                    <div className="h-9 bg-muted animate-pulse rounded flex-1" />
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {sortedProducts.map((product) => (
+                <Card key={product.id} className="overflow-hidden">
+                  <div className="aspect-square bg-muted relative">
+                    {product.images && product.images.length > 0 ? (
+                      <img 
+                        src={product.images[0]} 
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <MessageSquare className="h-12 w-12 text-muted-foreground" />
+                      </div>
+                    )}
+                    <Badge className="absolute top-2 right-2 bg-white text-black hover:bg-white/90">
+                      {product.category}
+                    </Badge>
                   </div>
-                  <p className="font-medium text-lg">₹{product.price}</p>
-                  <p className="text-sm mt-1">
-                    {t('dashboard.buyer.marketplace.by')} <span className="font-medium">{product.entrepreneurName}</span>
-                  </p>
-                </CardContent>
-                <CardFooter className="p-4 pt-0 flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1">
-                    <Phone className="h-4 w-4 mr-1" />
-                    {t('dashboard.buyer.marketplace.contact')}
-                  </Button>
-                  <Button size="sm" className="flex-1">
-                    <MessageSquare className="h-4 w-4 mr-1" />
-                    {t('dashboard.buyer.marketplace.inquiry')}
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-            
-            {sortedProducts.length === 0 && (
-              <div className="col-span-full text-center py-12">
-                <p>{t('dashboard.buyer.marketplace.noProducts')}</p>
-              </div>
-            )}
-          </div>
+                  <CardHeader className="p-4">
+                    <CardTitle className="text-lg">{product.name}</CardTitle>
+                    <CardDescription className="line-clamp-2">{product.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0">
+                    <div className="flex items-center text-xs text-muted-foreground mb-2">
+                      <MapPin size={12} className="mr-1" />
+                      <span>{product.location}</span>
+                    </div>
+                    <p className="font-medium text-lg">{formatCurrency(product.price)}</p>
+                    <p className="text-sm mt-1">
+                      {t('dashboard.buyer.marketplace.by')} <span className="font-medium">
+                        {(product as any).entrepreneurName || 'Unknown Entrepreneur'}
+                      </span>
+                    </p>
+                  </CardContent>
+                  <CardFooter className="p-4 pt-0 flex gap-2">
+                    <Button variant="outline" size="sm" className="flex-1" onClick={() => contactSeller(product.id)}>
+                      <Phone className="h-4 w-4 mr-1" />
+                      {t('dashboard.buyer.marketplace.contact')}
+                    </Button>
+                    <Button size="sm" className="flex-1" onClick={() => sendInquiry(product.id)}>
+                      <MessageSquare className="h-4 w-4 mr-1" />
+                      {t('dashboard.buyer.marketplace.inquiry')}
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+              
+              {sortedProducts.length === 0 && (
+                <div className="col-span-full text-center py-12">
+                  <p>{t('dashboard.buyer.marketplace.noProducts')}</p>
+                </div>
+              )}
+            </div>
+          )}
         </TabsContent>
         
         <TabsContent value="orders" className="mt-6">

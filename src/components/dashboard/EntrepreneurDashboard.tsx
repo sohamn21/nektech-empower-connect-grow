@@ -5,96 +5,175 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { GovScheme } from "@/types";
-import { Play, Upload, ShoppingBag, School, FileText } from "lucide-react";
+import { GovScheme, Product } from "@/types";
+import { Play, Upload, ShoppingBag, School, FileText, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
-// Mock government schemes data
-const mockGovSchemes: GovScheme[] = [
-  {
-    id: "1",
-    title: "Pradhan Mantri Mudra Yojana",
-    description: "Financial support up to ₹10 lakh for small entrepreneurs to help them start or expand their business",
-    eligibilityCriteria: {
-      maxIncome: 300000,
-      eligibleOccupations: ["artisan", "farmer", "small business"]
-    },
-    benefits: [
-      "Collateral-free loans",
-      "Flexible repayment options",
-      "Low interest rates"
-    ],
-    applicationUrl: "https://www.mudra.org.in"
-  },
-  {
-    id: "2",
-    title: "Deen Dayal Upadhyaya Grameen Kaushalya Yojana",
-    description: "Skills training program for rural youth to enhance their employability",
-    eligibilityCriteria: {
-      maxAge: 35,
-      eligibleLocations: ["rural"]
-    },
-    benefits: [
-      "Free skills training",
-      "Certification",
-      "Placement assistance"
-    ],
-    applicationUrl: "https://ddugky.gov.in"
-  },
-  {
-    id: "3",
-    title: "PM SVANidhi",
-    description: "Micro credit scheme for street vendors",
-    eligibilityCriteria: {
-      eligibleOccupations: ["street vendor"]
-    },
-    benefits: [
-      "Working capital loan up to ₹10,000",
-      "Interest subsidy",
-      "Cashback incentives for digital transactions"
-    ],
-    applicationUrl: "https://pmsvanidhi.mohua.gov.in"
-  }
-];
+const productSchema = z.object({
+  name: z.string().min(2, { message: "Product name must be at least 2 characters" }),
+  description: z.string().min(10, { message: "Description must be at least 10 characters" }),
+  price: z.coerce.number().positive({ message: "Price must be a positive number" }),
+  category: z.string().min(1, { message: "Please select a category" }),
+  location: z.string().min(2, { message: "Location must be at least 2 characters" }),
+});
 
 const EntrepreneurDashboard = () => {
   const { t } = useTranslation();
   const { userProfile } = useAuth();
   const [eligibleSchemes, setEligibleSchemes] = useState<GovScheme[]>([]);
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
+  const form = useForm<z.infer<typeof productSchema>>({
+    resolver: zodResolver(productSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      price: 0,
+      category: "",
+      location: "",
+    },
+  });
+
+  // Fetch products from Supabase
   useEffect(() => {
-    // Filter schemes based on user profile
-    if (userProfile) {
-      // In a real app, this would be a backend API call
-      const filteredSchemes = mockGovSchemes.filter(scheme => {
-        // Filter based on income if applicable
-        if (scheme.eligibilityCriteria.maxIncome && 
-            userProfile.role === 'entrepreneur' && 
-            (userProfile as any).familyIncome > scheme.eligibilityCriteria.maxIncome) {
-          return false;
-        }
+    const fetchProducts = async () => {
+      if (!userProfile) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('owner_id', userProfile.id);
+          
+        if (error) throw error;
         
-        // Filter based on occupation if applicable
-        if (scheme.eligibilityCriteria.eligibleOccupations && 
-            userProfile.role === 'entrepreneur' && 
-            !scheme.eligibilityCriteria.eligibleOccupations.includes((userProfile as any).occupation)) {
-          return false;
-        }
+        setProducts(data as Product[]);
+      } catch (error: any) {
+        console.error('Error fetching products:', error.message);
+        toast({
+          variant: "destructive",
+          title: "Failed to load products",
+          description: error.message,
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [userProfile, toast]);
+
+  // Fetch schemes from Supabase
+  useEffect(() => {
+    const fetchSchemes = async () => {
+      if (!userProfile) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('schemes')
+          .select('*');
+          
+        if (error) throw error;
         
-        return true;
+        // Filter schemes based on user profile criteria
+        if (data && userProfile.role === 'entrepreneur') {
+          const filteredSchemes = data.filter(scheme => {
+            const criteria = scheme.eligibility_criteria;
+            if (!criteria) return true;
+            
+            // Check income criteria
+            if (criteria.maxIncome && (userProfile as any).familyIncome > criteria.maxIncome) {
+              return false;
+            }
+            
+            // Check occupation criteria
+            if (criteria.eligibleOccupations && 
+                !criteria.eligibleOccupations.includes((userProfile as any).occupation)) {
+              return false;
+            }
+            
+            return true;
+          });
+          
+          setEligibleSchemes(filteredSchemes as GovScheme[]);
+        }
+      } catch (error: any) {
+        console.error('Error fetching schemes:', error.message);
+      }
+    };
+
+    fetchSchemes();
+  }, [userProfile]);
+
+  const onSubmitProduct = async (data: z.infer<typeof productSchema>) => {
+    if (!userProfile) return;
+    
+    setIsSubmitting(true);
+    
+    try {
+      const { error } = await supabase
+        .from('products')
+        .insert({
+          owner_id: userProfile.id,
+          name: data.name,
+          description: data.description,
+          price: data.price,
+          category: data.category,
+          location: data.location,
+          images: [],
+          status: 'active'
+        });
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Product added",
+        description: "Your product has been successfully added.",
       });
       
-      setEligibleSchemes(filteredSchemes);
-      setIsLoading(false);
+      // Reload products
+      const { data: newProducts, error: fetchError } = await supabase
+        .from('products')
+        .select('*')
+        .eq('owner_id', userProfile.id);
+        
+      if (fetchError) throw fetchError;
+      
+      setProducts(newProducts as Product[]);
+      setIsProductDialogOpen(false);
+      form.reset();
+    } catch (error: any) {
+      console.error('Error adding product:', error.message);
+      toast({
+        variant: "destructive",
+        title: "Failed to add product",
+        description: error.message,
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-  }, [userProfile]);
+  };
 
   const playVoiceGuidance = (text: string) => {
     // In a real app, this would use a text-to-speech API
     console.log("Playing voice guidance:", text);
-    // Text-to-speech implementation would go here
+    toast({
+      title: "Voice Guidance",
+      description: "Playing: " + text,
+    });
   };
 
   return (
@@ -110,37 +189,149 @@ const EntrepreneurDashboard = () => {
         <TabsContent value="products" className="mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Add product card */}
-            <Card className="border-dashed border-2">
-              <CardContent className="p-6 flex flex-col items-center justify-center h-full min-h-[200px]">
-                <Upload className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">{t('dashboard.entrepreneur.addProduct')}</h3>
-                <p className="text-sm text-muted-foreground text-center mb-4">
-                  {t('dashboard.entrepreneur.addProductDescription')}
-                </p>
-                <Button className="mt-auto">
-                  {t('dashboard.entrepreneur.addProductButton')}
-                </Button>
-              </CardContent>
-            </Card>
+            <Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen}>
+              <DialogTrigger asChild>
+                <Card className="border-dashed border-2 cursor-pointer hover:bg-accent/10 transition-colors">
+                  <CardContent className="p-6 flex flex-col items-center justify-center h-full min-h-[200px]">
+                    <Plus className="h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-medium mb-2">{t('dashboard.entrepreneur.addProduct')}</h3>
+                    <p className="text-sm text-muted-foreground text-center mb-4">
+                      {t('dashboard.entrepreneur.addProductDescription')}
+                    </p>
+                  </CardContent>
+                </Card>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>{t('dashboard.entrepreneur.addProductTitle')}</DialogTitle>
+                  <DialogDescription>
+                    {t('dashboard.entrepreneur.addProductDialogDescription')}
+                  </DialogDescription>
+                </DialogHeader>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmitProduct)} className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Product Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter product name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Description</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="Describe your product" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="price"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Price (₹)</FormLabel>
+                            <FormControl>
+                              <Input type="number" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="category"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Category</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select category" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="Handicrafts">Handicrafts</SelectItem>
+                                <SelectItem value="Textiles">Textiles</SelectItem>
+                                <SelectItem value="Food">Food</SelectItem>
+                                <SelectItem value="Jewelry">Jewelry</SelectItem>
+                                <SelectItem value="Home Decor">Home Decor</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <FormField
+                      control={form.control}
+                      name="location"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Location</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Your location" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <DialogFooter>
+                      <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? "Adding..." : "Add Product"}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
             
-            {/* Placeholder for product cards */}
-            <Card className="opacity-40">
-              <CardHeader>
-                <CardTitle>{t('dashboard.entrepreneur.sampleProduct')}</CardTitle>
-                <CardDescription>{t('dashboard.entrepreneur.sampleCategory')}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="aspect-square bg-muted rounded-md flex items-center justify-center mb-4">
-                  <ShoppingBag className="h-12 w-12 text-muted-foreground" />
+            {/* Product cards */}
+            {products.map(product => (
+              <Card key={product.id} className="overflow-hidden">
+                <div className="aspect-square bg-muted flex items-center justify-center">
+                  {product.images && product.images.length > 0 ? (
+                    <img 
+                      src={product.images[0]} 
+                      alt={product.name} 
+                      className="h-full w-full object-cover" 
+                    />
+                  ) : (
+                    <ShoppingBag className="h-12 w-12 text-muted-foreground" />
+                  )}
                 </div>
-                <div className="flex justify-between">
-                  <span className="font-medium">₹500</span>
-                  <Button variant="outline" size="sm" disabled>
-                    {t('dashboard.entrepreneur.edit')}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                <CardHeader>
+                  <CardTitle>{product.name}</CardTitle>
+                  <CardDescription className="line-clamp-2">{product.description}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium">₹{product.price}</span>
+                    <Button variant="outline" size="sm">
+                      {t('dashboard.entrepreneur.edit')}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            
+            {products.length === 0 && !isLoading && (
+              <div className="col-span-full text-center py-6 text-muted-foreground">
+                {t('dashboard.entrepreneur.noProducts')}
+              </div>
+            )}
           </div>
         </TabsContent>
         
@@ -162,7 +353,7 @@ const EntrepreneurDashboard = () => {
                   ].map((module, index) => (
                     <div key={index} className="flex items-center justify-between border p-4 rounded-md">
                       <div className="flex items-center">
-                        <School className="h-5 w-5 mr-3 text-nektech-orange" />
+                        <School className="h-5 w-5 mr-3 text-primary" />
                         <span>{t(`dashboard.entrepreneur.training.modules.${module}`)}</span>
                       </div>
                       <Button size="sm" variant="ghost" onClick={() => 
@@ -322,6 +513,15 @@ const EntrepreneurDashboard = () => {
                         <p className="font-medium">{'familyIncome' in (userProfile as any) ? 
                           `₹${(userProfile as any).familyIncome.toLocaleString()}` : 
                           "-"}</p>
+                      </div>
+                      
+                      <div>
+                        <h4 className="text-sm font-medium text-muted-foreground mb-1">
+                          {t('dashboard.entrepreneur.profile.hubManagerPermission')}
+                        </h4>
+                        <p className="font-medium">{'hubManagerPermission' in (userProfile as any) ? 
+                          ((userProfile as any).hubManagerPermission ? 'Granted' : 'Not Granted') : 
+                          "Not Granted"}</p>
                       </div>
                     </>
                   )}

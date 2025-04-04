@@ -26,6 +26,7 @@ export interface HubManagerProfile extends UserProfile {
   role: 'hub_manager';
   hubId: string;
   hubName: string;
+  location: string;
   managedEntrepreneurs: string[]; // IDs of entrepreneurs under management
 }
 
@@ -44,15 +45,15 @@ export interface CSRProfile extends UserProfile {
 
 export interface Product {
   id: string;
-  ownerId: string;
+  owner_id: string;
   name: string;
   description: string;
   price: number;
   category: string;
   images: string[];
   location: string;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
   status: 'active' | 'draft' | 'sold';
 }
 
@@ -60,7 +61,7 @@ export interface GovScheme {
   id: string;
   title: string;
   description: string;
-  eligibilityCriteria: {
+  eligibility_criteria: {
     minIncome?: number;
     maxIncome?: number;
     eligibleOccupations?: string[];

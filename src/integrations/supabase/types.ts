@@ -9,7 +9,232 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      buyer_profiles: {
+        Row: {
+          business_type: string | null
+          company_name: string | null
+          id: string
+        }
+        Insert: {
+          business_type?: string | null
+          company_name?: string | null
+          id: string
+        }
+        Update: {
+          business_type?: string | null
+          company_name?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buyer_profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      csr_profiles: {
+        Row: {
+          id: string
+          organization_name: string
+          registration_number: string
+        }
+        Insert: {
+          id: string
+          organization_name: string
+          registration_number: string
+        }
+        Update: {
+          id?: string
+          organization_name?: string
+          registration_number?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "csr_profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      entrepreneur_profiles: {
+        Row: {
+          aadhar_number: string | null
+          assisting_hub_manager_id: string | null
+          family_income: number | null
+          hub_manager_permission: boolean | null
+          id: string
+          occupation: string | null
+        }
+        Insert: {
+          aadhar_number?: string | null
+          assisting_hub_manager_id?: string | null
+          family_income?: number | null
+          hub_manager_permission?: boolean | null
+          id: string
+          occupation?: string | null
+        }
+        Update: {
+          aadhar_number?: string | null
+          assisting_hub_manager_id?: string | null
+          family_income?: number | null
+          hub_manager_permission?: boolean | null
+          id?: string
+          occupation?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entrepreneur_profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hub_manager_profiles: {
+        Row: {
+          hub_id: string
+          hub_name: string
+          id: string
+          location: string
+        }
+        Insert: {
+          hub_id: string
+          hub_name: string
+          id: string
+          location: string
+        }
+        Update: {
+          hub_id?: string
+          hub_name?: string
+          id?: string
+          location?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_manager_profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          images: string[] | null
+          location: string | null
+          name: string
+          owner_id: string | null
+          price: number
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          location?: string | null
+          name: string
+          owner_id?: string | null
+          price: number
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          location?: string | null
+          name?: string
+          owner_id?: string | null
+          price?: number
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          preferred_language: string | null
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id: string
+          name: string
+          preferred_language?: string | null
+          role: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          preferred_language?: string | null
+          role?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      schemes: {
+        Row: {
+          application_url: string | null
+          benefits: string[] | null
+          created_at: string
+          description: string
+          eligibility_criteria: Json | null
+          id: string
+          title: string
+        }
+        Insert: {
+          application_url?: string | null
+          benefits?: string[] | null
+          created_at?: string
+          description: string
+          eligibility_criteria?: Json | null
+          id?: string
+          title: string
+        }
+        Update: {
+          application_url?: string | null
+          benefits?: string[] | null
+          created_at?: string
+          description?: string
+          eligibility_criteria?: Json | null
+          id?: string
+          title?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
