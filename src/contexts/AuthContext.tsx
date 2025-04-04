@@ -31,6 +31,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         (event, session) => {
+          console.log("Auth state changed:", event, session?.user?.id);
           setSession(session);
           setUser(session?.user ?? null);
           
@@ -62,6 +63,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   
   const fetchUserProfile = async (userId: string) => {
     try {
+      console.log("Fetching profile for user:", userId);
       // Using as const to specify the exact table name
       const profilesTable = "profiles" as const;
       const { data: profileData, error: profileError } = await supabase
@@ -70,9 +72,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .eq('id', userId)
         .single();
         
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error("Error fetching main profile:", profileError.message);
+        throw profileError;
+      }
       
       if (profileData) {
+        console.log("Found main profile:", profileData);
         const mainProfile = profileData as ProfileData;
         let roleSpecificData = {};
         
@@ -86,7 +92,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             .eq('id', userId)
             .single();
             
+          if (error) {
+            console.error("Error fetching entrepreneur profile:", error.message);
+          }
+          
           if (!error && data) {
+            console.log("Found entrepreneur data:", data);
             roleSpecificData = data;
           }
         } else if (mainProfile.role === 'hub_manager') {
@@ -98,7 +109,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             .eq('id', userId)
             .single();
             
+          if (error) {
+            console.error("Error fetching hub manager profile:", error.message);
+          }
+          
           if (!error && data) {
+            console.log("Found hub manager data:", data);
             roleSpecificData = data;
           }
         } else if (mainProfile.role === 'buyer') {
@@ -110,7 +126,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             .eq('id', userId)
             .single();
             
+          if (error) {
+            console.error("Error fetching buyer profile:", error.message);
+          }
+          
           if (!error && data) {
+            console.log("Found buyer data:", data);
             roleSpecificData = data;
           }
         } else if (mainProfile.role === 'csr') {
@@ -122,7 +143,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             .eq('id', userId)
             .single();
             
+          if (error) {
+            console.error("Error fetching CSR profile:", error.message);
+          }
+          
           if (!error && data) {
+            console.log("Found CSR data:", data);
             roleSpecificData = data;
           }
         }
@@ -143,10 +169,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           camelCasedRoleData[camelKey] = value;
         });
         
-        setUserProfile({
+        const completeProfile = {
           ...transformedProfile,
           ...camelCasedRoleData
-        } as UserProfile);
+        } as UserProfile;
+        
+        console.log("Setting complete user profile:", completeProfile);
+        setUserProfile(completeProfile);
       }
     } catch (error: any) {
       console.error('Error fetching user profile:', error.message);

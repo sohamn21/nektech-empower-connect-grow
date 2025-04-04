@@ -18,12 +18,20 @@ const Dashboard = () => {
   const { t } = useTranslation();
   const { isAuthenticated, isLoading, userProfile, userRole, signOut } = useAuth();
   const navigate = useNavigate();
+  const [isComponentLoading, setIsComponentLoading] = useState(true);
 
   useEffect(() => {
     // If user is not authenticated and not loading, redirect to login
     if (!isLoading && !isAuthenticated) {
       navigate("/auth");
     }
+    
+    // Add a small delay to ensure dashboard components have time to load
+    const timer = setTimeout(() => {
+      setIsComponentLoading(false);
+    }, 500);
+    
+    return () => clearTimeout(timer);
   }, [isAuthenticated, isLoading, navigate]);
 
   // Show loading state while checking authentication
@@ -75,7 +83,19 @@ const Dashboard = () => {
   // Show appropriate dashboard based on user role
   const renderDashboardContent = () => {
     if (!userProfile) return null;
+    
+    // Show loading indicator while dashboard components are initializing
+    if (isComponentLoading) {
+      return (
+        <div className="flex justify-center items-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mr-2" />
+          <p>{t('dashboard.loadingContent')}</p>
+        </div>
+      );
+    }
 
+    console.log("Current user role:", userRole);
+    
     switch (userRole) {
       case "entrepreneur":
         return <EntrepreneurDashboard />;
@@ -89,6 +109,7 @@ const Dashboard = () => {
         return (
           <div className="p-8 text-center">
             <p className="text-xl">{t('dashboard.roleNotConfigured')}</p>
+            <p className="mt-2">Current role: {userRole || 'Unknown'}</p>
           </div>
         );
     }
