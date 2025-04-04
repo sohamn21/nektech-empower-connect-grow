@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -36,7 +35,6 @@ const Auth = () => {
     phone: z.string().optional(),
   });
 
-  // Extended schemas for different roles
   const entrepreneurSchema = signupSchema.extend({
     aadharNumber: z.string().min(12, { message: t('auth.validation.aadhar') }),
     occupation: z.string().min(2, { message: t('auth.validation.occupation') }),
@@ -58,7 +56,6 @@ const Auth = () => {
     registrationNumber: z.string().min(2, { message: t('auth.validation.regNumber') }),
   });
 
-  // Get the appropriate schema based on selected role
   const getSchemaForRole = () => {
     if (authMode === "login") return loginSchema;
 
@@ -92,19 +89,17 @@ const Auth = () => {
     },
   });
 
-  // Update form validation when role changes
-  useState(() => {
+  useEffect(() => {
     form.reset({
       ...form.getValues(),
       role: selectedRole,
     });
-  }, [selectedRole]);
+  }, [selectedRole, form]);
 
   const onSubmit = async (values: any) => {
     setIsLoading(true);
     try {
       if (authMode === "signup") {
-        // Prepare user metadata based on role
         let metaData: any = {
           name: values.name,
           role: selectedRole,
@@ -162,7 +157,6 @@ const Auth = () => {
           description: t('auth.signup.success.description'),
         });
 
-        // Switch to login mode after signup
         setAuthMode("login");
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -206,7 +200,6 @@ const Auth = () => {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Common fields for both login and signup */}
             <FormField
               control={form.control}
               name="email"
@@ -245,7 +238,6 @@ const Auth = () => {
               )}
             />
 
-            {/* Fields only for signup */}
             {authMode === "signup" && (
               <>
                 <FormField
@@ -342,7 +334,6 @@ const Auth = () => {
                   )}
                 />
 
-                {/* Role-specific fields */}
                 {selectedRole === "entrepreneur" && (
                   <>
                     <FormField

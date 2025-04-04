@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,7 +22,6 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-// Mock products data
 const mockProducts = [
   {
     id: "1",
@@ -71,7 +69,6 @@ const mockProducts = [
   }
 ];
 
-// List of locations and categories for filters
 const locations = ["All Locations", "Rajasthan", "Himachal Pradesh", "Gujarat", "West Bengal", "Maharashtra", "Tamil Nadu"];
 const categories = ["All Categories", "Handicrafts", "Textiles", "Food", "Jewelry", "Home Decor", "Paper Products"];
 
@@ -84,7 +81,6 @@ const BuyerDashboard = () => {
   const [selectedLocation, setSelectedLocation] = useState("All Locations");
   const [sortBy, setSortBy] = useState("newest");
 
-  // Filter products based on search, category, and location
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -97,15 +93,12 @@ const BuyerDashboard = () => {
     return matchesSearch && matchesCategory && matchesLocation;
   });
 
-  // Sort products
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (sortBy === "priceAsc") return a.price - b.price;
     if (sortBy === "priceDesc") return b.price - a.price;
-    // For "newest" (default), use the product ID as a proxy for creation date
     return b.id.localeCompare(a.id);
   });
 
-  // Reset all filters
   const resetFilters = () => {
     setSearchQuery("");
     setSelectedCategory("All Categories");
@@ -113,11 +106,17 @@ const BuyerDashboard = () => {
     setSortBy("newest");
   };
 
-  // Check if any filters are active
   const hasActiveFilters = searchQuery !== "" || 
                           selectedCategory !== "All Categories" || 
                           selectedLocation !== "All Locations" ||
                           sortBy !== "newest";
+
+  const navigateToMarketplace = () => {
+    const marketplaceTab = document.querySelector('[data-value="marketplace"]') as HTMLElement;
+    if (marketplaceTab) {
+      marketplaceTab.click();
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -129,7 +128,6 @@ const BuyerDashboard = () => {
         </TabsList>
         
         <TabsContent value="marketplace" className="mt-6">
-          {/* Filters section */}
           <Card className="mb-6">
             <CardHeader className="pb-3">
               <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
@@ -200,7 +198,6 @@ const BuyerDashboard = () => {
             </CardContent>
           </Card>
           
-          {/* Products grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {sortedProducts.map((product) => (
               <Card key={product.id} className="overflow-hidden">
@@ -260,7 +257,7 @@ const BuyerDashboard = () => {
             <CardContent className="flex items-center justify-center py-12">
               <div className="text-center">
                 <p className="text-muted-foreground mb-4">{t('dashboard.buyer.orders.empty')}</p>
-                <Button onClick={() => document.querySelector('[data-value="marketplace"]')?.click()}>
+                <Button onClick={navigateToMarketplace}>
                   {t('dashboard.buyer.orders.browseProducts')}
                 </Button>
               </div>
