@@ -81,9 +81,9 @@ export interface GovScheme {
 // UserInteraction interface for DialogFlow tracking
 export interface UserInteraction {
   id: string;
-  phone_number: string;
+  phone_number: string | null;
   intent: string;
-  user_input: string;
+  user_input: string | null;
   language: string;
   timestamp: string;
   additional_data?: Json;

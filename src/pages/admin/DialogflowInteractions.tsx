@@ -15,15 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Download, Filter } from "lucide-react";
-
-interface UserInteraction {
-  id: string;
-  phone_number: string;
-  intent: string;
-  user_input: string;
-  language: string;
-  timestamp: string;
-}
+import { UserInteraction } from "@/types";
 
 const DialogflowInteractions = () => {
   const { t } = useTranslation();
@@ -88,7 +80,7 @@ const DialogflowInteractions = () => {
         return;
       }
       
-      setInteractions(data || []);
+      setInteractions(data as UserInteraction[] || []);
       setTotalPages(Math.ceil((count || 0) / itemsPerPage));
     } catch (error) {
       console.error("Error in fetchInteractions:", error);
@@ -127,9 +119,9 @@ const DialogflowInteractions = () => {
       const headers = ['ID', 'Phone Number', 'Intent', 'User Input', 'Language', 'Timestamp'];
       const csvRows = [
         headers.join(','),
-        ...data.map(item => [
+        ...(data as UserInteraction[]).map(item => [
           item.id,
-          item.phone_number,
+          item.phone_number || '',
           item.intent,
           `"${(item.user_input || '').replace(/"/g, '""')}"`,
           item.language,
