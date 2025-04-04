@@ -1,8 +1,7 @@
-
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session, User } from "@supabase/supabase-js";
-import { UserProfile, UserRole } from "@/types";
+import { UserProfile, UserRole, TableNames } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 
 type AuthContextType = {
@@ -29,7 +28,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const setupAuth = async () => {
       setIsLoading(true);
       
-      // Set up auth state listener first
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         (event, session) => {
           setSession(session);
@@ -43,7 +41,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       );
       
-      // Then check for existing session
       const { data: { session: currentSession } } = await supabase.auth.getSession();
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
@@ -65,20 +62,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const fetchUserProfile = async (userId: string) => {
     try {
       const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
+        .from('profiles' as TableNames)
         .select('*')
         .eq('id', userId)
         .single();
         
       if (profileError) throw profileError;
       
-      // Get role-specific profile data based on the user's role
       if (profileData) {
         let roleSpecificData = {};
         
         if (profileData.role === 'entrepreneur') {
           const { data, error } = await supabase
-            .from('entrepreneur_profiles')
+            .from('entrepreneur_profiles' as TableNames)
             .select('*')
             .eq('id', userId)
             .single();
@@ -88,7 +84,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
         } else if (profileData.role === 'hub_manager') {
           const { data, error } = await supabase
-            .from('hub_manager_profiles')
+            .from('hub_manager_profiles' as TableNames)
             .select('*')
             .eq('id', userId)
             .single();
@@ -98,7 +94,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
         } else if (profileData.role === 'buyer') {
           const { data, error } = await supabase
-            .from('buyer_profiles')
+            .from('buyer_profiles' as TableNames)
             .select('*')
             .eq('id', userId)
             .single();
@@ -108,7 +104,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
         } else if (profileData.role === 'csr') {
           const { data, error } = await supabase
-            .from('csr_profiles')
+            .from('csr_profiles' as TableNames)
             .select('*')
             .eq('id', userId)
             .single();
@@ -118,7 +114,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
         }
         
-        // Transform snake_case DB fields to camelCase for the frontend
         const transformedProfile: UserProfile = {
           id: profileData.id,
           email: profileData.email,
@@ -126,18 +121,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           name: profileData.name,
           preferredLanguage: profileData.preferred_language || 'en',
           createdAt: profileData.created_at,
-          // Add any other base profile fields as needed
         };
 
-        // Combine with role-specific data, camelCasing the keys
         const camelCasedRoleData: Record<string, any> = {};
         Object.entries(roleSpecificData).forEach(([key, value]) => {
-          // Convert snake_case to camelCase
           const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
           camelCasedRoleData[camelKey] = value;
         });
         
-        // Set the combined profile
         setUserProfile({
           ...transformedProfile,
           ...camelCasedRoleData
@@ -153,12 +144,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!user) return;
     
     try {
-      // Determine which properties belong to main profile and which to role-specific profile
       const mainProfileProps: Record<string, any> = {};
       const roleSpecificProps: Record<string, any> = {};
       
       Object.entries(profile).forEach(([key, value]) => {
-        // Mapping profile keys to database column names
         if (['name', 'email', 'role', 'preferredLanguage'].includes(key)) {
           if (key === 'preferredLanguage') {
             mainProfileProps['preferred_language'] = value;
@@ -166,25 +155,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             mainProfileProps[key] = value;
           }
         } else {
-          // Convert camelCase to snake_case for DB
           const snakeKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
           roleSpecificProps[snakeKey] = value;
         }
       });
       
-      // Update main profile
       if (Object.keys(mainProfileProps).length > 0) {
         const { error } = await supabase
-          .from('profiles')
+          .from('profiles' as TableNames)
           .update(mainProfileProps)
           .eq('id', user.id);
           
         if (error) throw error;
       }
       
-      // Update role-specific profile
       if (Object.keys(roleSpecificProps).length > 0 && userProfile?.role) {
-        const tableName = `${userProfile.role}_profiles`;
+        const tableName = `${userProfile.role}_profiles` as TableNames;
         const { error } = await supabase
           .from(tableName)
           .update(roleSpecificProps)
@@ -193,7 +179,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (error) throw error;
       }
       
-      // Refetch the profile to get updated data
       await fetchUserProfile(user.id);
       
       toast({

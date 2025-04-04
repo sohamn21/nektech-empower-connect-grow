@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { GovScheme, Product, DatabaseScheme, Json } from "@/types";
+import { GovScheme, Product, DatabaseScheme, Json, TableNames } from "@/types";
 import { Play, Upload, ShoppingBag, School, FileText, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -54,7 +53,7 @@ const EntrepreneurDashboard = () => {
       
       try {
         const { data, error } = await supabase
-          .from('products')
+          .from('products' as TableNames)
           .select('*')
           .eq('owner_id', userProfile.id);
           
@@ -83,7 +82,7 @@ const EntrepreneurDashboard = () => {
       
       try {
         const { data: rawData, error } = await supabase
-          .from('schemes')
+          .from('schemes' as TableNames)
           .select('*');
           
         if (error) throw error;
@@ -150,7 +149,7 @@ const EntrepreneurDashboard = () => {
     
     try {
       const { error } = await supabase
-        .from('products')
+        .from('products' as TableNames)
         .insert({
           owner_id: userProfile.id,
           name: data.name,
@@ -171,7 +170,7 @@ const EntrepreneurDashboard = () => {
       
       // Reload products
       const { data: newProducts, error: fetchError } = await supabase
-        .from('products')
+        .from('products' as TableNames)
         .select('*')
         .eq('owner_id', userProfile.id);
         
@@ -450,7 +449,7 @@ const EntrepreneurDashboard = () => {
                     
                     <div className="flex justify-between items-center pt-2">
                       <Button variant="outline" size="sm" asChild>
-                        <a href={scheme.applicationUrl} target="_blank" rel="noopener noreferrer">
+                        <a href={scheme.application_url} target="_blank" rel="noopener noreferrer">
                           <FileText className="h-4 w-4 mr-2" />
                           {t('dashboard.entrepreneur.schemes.apply')}
                         </a>

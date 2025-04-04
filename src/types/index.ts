@@ -74,7 +74,7 @@ export interface GovScheme {
     maxAge?: number;
   };
   benefits: string[];
-  application_url: string;
+  application_url: string;  // Note: Keep snake_case here to match database fields
   created_at: string;
 }
 
@@ -88,3 +88,13 @@ export interface DatabaseScheme {
   application_url: string;
   created_at: string;
 }
+
+// Define Supabase table names as string literals for type safety
+export type TableNames = 
+  | "profiles"
+  | "buyer_profiles" 
+  | "csr_profiles"
+  | "entrepreneur_profiles"
+  | "hub_manager_profiles"
+  | "products"
+  | "schemes";

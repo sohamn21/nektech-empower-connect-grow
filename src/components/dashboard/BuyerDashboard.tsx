@@ -1,10 +1,11 @@
+
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Product } from "@/types";
+import { Product, TableNames } from "@/types";
 import { ShoppingBag, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -22,7 +23,7 @@ const BuyerDashboard = () => {
     const fetchProducts = async () => {
       try {
         const { data, error } = await supabase
-          .from('products')
+          .from('products' as TableNames)
           .select(`
             *,
             profiles(name)
