@@ -89,7 +89,7 @@ function generateTwiMLResponse(message: string, options?: { gather?: boolean, go
   if (options?.gather) {
     const gather = twiml.gather({
       numDigits: 1,
-      action: '/dialogflow-webhook?action=process_input',
+      action: '/functions/v1/dialogflow-webhook?action=process_input',
       method: 'POST'
     });
   }
@@ -99,6 +99,92 @@ function generateTwiMLResponse(message: string, options?: { gather?: boolean, go
   }
   
   return twiml.toString();
+}
+
+// Handle Twilio incoming voice call
+async function handleTwilioVoiceCall(req: Request) {
+  try {
+    const formData = await req.formData();
+    const callSid = formData.get('CallSid')?.toString() || '';
+    const from = formData.get('From')?.toString() || '';
+    const digits = formData.get('Digits')?.toString();
+    const action = new URL(req.url).searchParams.get('action');
+    
+    console.log("Twilio Voice Call:", { callSid, from, digits, action });
+    
+    // Process user input when they press a digit
+    if (action === 'process_input' && digits) {
+      let intent = '';
+      let response = '';
+      
+      // Map digit to intent
+      switch (digits) {
+        case '1':
+          intent = 'ProductInfo';
+          response = getResponse('productInfo', 'en');
+          break;
+        case '2':
+          intent = 'Training';
+          response = getResponse('training', 'en');
+          break;
+        case '3':
+          intent = 'Marketplace';
+          response = getResponse('marketplace', 'en');
+          break;
+        default:
+          intent = 'Fallback';
+          response = getResponse('fallback', 'en');
+      }
+      
+      // Log the interaction
+      await logUserInteraction(from, intent, digits, 'en');
+      
+      // Generate TwiML response with options to continue or end call
+      const twimlResponse = generateTwiMLResponse(response, {
+        gather: true, // Ask for more input
+        goodbye: false // Don't end call yet
+      });
+      
+      return new Response(twimlResponse, {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/xml'
+        }
+      });
+    }
+    
+    // Initial call handling - Welcome message
+    await logUserInteraction(from, 'Welcome', '', 'en');
+    
+    const welcomeMessage = getResponse('welcome', 'en');
+    const optionsMessage = getResponse('options', 'en');
+    const fullMessage = `${welcomeMessage} ${optionsMessage}`;
+    
+    const twimlResponse = generateTwiMLResponse(fullMessage, {
+      gather: true, // Ask for input
+      goodbye: false // Don't end call yet
+    });
+    
+    return new Response(twimlResponse, {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/xml'
+      }
+    });
+  } catch (error) {
+    console.error("Error handling Twilio voice call:", error);
+    const twimlResponse = generateTwiMLResponse("Sorry, there was an error processing your call. Please try again later.", {
+      goodbye: true
+    });
+    
+    return new Response(twimlResponse, {
+      status: 500,
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/xml'
+      }
+    });
+  }
 }
 
 // Process Dialogflow request
@@ -197,25 +283,34 @@ serve(async (req) => {
     });
   }
   
-  // Verify authentication
-  const authHeader = req.headers.get('Authorization');
-  const apiKey = Deno.env.get('DIALOGFLOW_API_KEY');
+  // Verify authentication except for Twilio webhook calls
+  const contentType = req.headers.get('Content-Type') || '';
+  const isTwilioWebhook = contentType.includes('application/x-www-form-urlencoded');
   
-  if (!authHeader || authHeader !== `Bearer ${apiKey}`) {
-    return new Response(JSON.stringify({
-      error: 'Unauthorized'
-    }), {
-      status: 401,
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'application/json'
-      }
-    });
+  if (!isTwilioWebhook) {
+    const authHeader = req.headers.get('Authorization');
+    const apiKey = Deno.env.get('DIALOGFLOW_API_KEY');
+    
+    if (!authHeader || authHeader !== `Bearer ${apiKey}`) {
+      return new Response(JSON.stringify({
+        error: 'Unauthorized'
+      }), {
+        status: 401,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
+      });
+    }
   }
   
-  // Handle webhook request
+  // Handle webhook request based on content type
   if (req.method === 'POST') {
-    return processDialogflowRequest(req);
+    if (isTwilioWebhook) {
+      return handleTwilioVoiceCall(req);
+    } else {
+      return processDialogflowRequest(req);
+    }
   }
   
   // Method not allowed for other request types
