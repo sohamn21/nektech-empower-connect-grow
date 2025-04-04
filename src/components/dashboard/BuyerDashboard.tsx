@@ -112,8 +112,8 @@ const BuyerDashboard = () => {
                           sortBy !== "newest";
 
   const navigateToMarketplace = () => {
-    const marketplaceTab = document.querySelector('[data-value="marketplace"]') as HTMLElement;
-    if (marketplaceTab) {
+    const marketplaceTab = document.querySelector('[data-value="marketplace"]');
+    if (marketplaceTab && marketplaceTab instanceof HTMLElement) {
       marketplaceTab.click();
     }
   };
