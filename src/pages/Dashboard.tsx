@@ -7,7 +7,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Languages, Bell, HelpCircle, Download } from "lucide-react";
+import { Loader2, Bell, HelpCircle, Download } from "lucide-react";
 import EntrepreneurDashboard from "@/components/dashboard/EntrepreneurDashboard";
 import HubManagerDashboard from "@/components/dashboard/HubManagerDashboard";
 import BuyerDashboard from "@/components/dashboard/BuyerDashboard";
@@ -98,7 +98,7 @@ const Dashboard = () => {
         </div>
       );
     }
-
+    
     console.log("Current user role:", userRole);
     
     switch (userRole) {
@@ -180,14 +180,6 @@ const Dashboard = () => {
             {t('dashboard.roleDescription', { role: t(`dashboard.roles.${userRole || 'unknown'}`) })}
           </p>
         </div>
-        
-        <Tabs value={currentTab} onValueChange={setCurrentTab} className="mt-6">
-          <TabsList>
-            <TabsTrigger value="dashboard">{t('dashboard.tabs.dashboard')}</TabsTrigger>
-            <TabsTrigger value="analytics">{t('dashboard.tabs.analytics')}</TabsTrigger>
-            <TabsTrigger value="settings">{t('dashboard.tabs.settings')}</TabsTrigger>
-          </TabsList>
-        </Tabs>
       </div>
     </div>
   );
@@ -198,75 +190,7 @@ const Dashboard = () => {
       {renderDashboardHeader()}
       <main className="flex-grow bg-muted/20">
         <div className="container mx-auto px-4 py-8">
-          <div className="mb-4">
-            <Tabs value={currentTab} className="hidden">
-              <TabsContent value="dashboard">
-                {renderDashboardContent()}
-              </TabsContent>
-              <TabsContent value="analytics">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>{t('dashboard.analytics.title')}</CardTitle>
-                    <CardDescription>{t('dashboard.analytics.description')}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-80 flex items-center justify-center bg-muted rounded-md">
-                      <p className="text-muted-foreground">{t('dashboard.analytics.comingSoon')}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              <TabsContent value="settings">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>{t('dashboard.settings.title')}</CardTitle>
-                    <CardDescription>{t('dashboard.settings.description')}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div>
-                        <h3 className="font-medium">{t('dashboard.settings.language')}</h3>
-                        <p className="text-sm text-muted-foreground mb-2">{t('dashboard.settings.languageDescription')}</p>
-                        <div className="flex items-center space-x-2">
-                          <Button 
-                            variant={i18n.language === 'en' ? 'default' : 'outline'} 
-                            size="sm" 
-                            onClick={() => i18n.changeLanguage('en')}
-                          >
-                            English
-                          </Button>
-                          <Button 
-                            variant={i18n.language === 'hi' ? 'default' : 'outline'} 
-                            size="sm" 
-                            onClick={() => i18n.changeLanguage('hi')}
-                          >
-                            हिन्दी
-                          </Button>
-                          <Button 
-                            variant={i18n.language === 'mr' ? 'default' : 'outline'} 
-                            size="sm" 
-                            onClick={() => i18n.changeLanguage('mr')}
-                          >
-                            मराठी
-                          </Button>
-                        </div>
-                      </div>
-                      <div>
-                        <h3 className="font-medium">{t('dashboard.settings.account')}</h3>
-                        <p className="text-sm text-muted-foreground mb-2">{t('dashboard.settings.accountDescription')}</p>
-                        <Button 
-                          onClick={() => signOut()} 
-                          variant="destructive"
-                        >
-                          {t('dashboard.signOut')}
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
-          </div>
+          {renderDashboardContent()}
         </div>
       </main>
       <Footer />
