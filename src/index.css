@@ -54,6 +54,16 @@
   body {
     @apply bg-background text-foreground font-sans;
   }
+  
+  /* Add smooth scrolling */
+  html {
+    @apply scroll-smooth;
+  }
+  
+  /* Add transition to all elements by default */
+  *, *::before, *::after {
+    @apply transition-colors duration-200;
+  }
 }
 
 @layer components {
@@ -78,10 +88,31 @@
   }
 
   .btn-primary {
-    @apply bg-nektech-orange text-white hover:bg-opacity-90 transition-colors;
+    @apply bg-nektech-orange text-white hover:bg-opacity-90 transition-colors hover:shadow-md;
   }
 
   .btn-secondary {
-    @apply bg-nektech-blue text-white hover:bg-opacity-90 transition-colors;
+    @apply bg-nektech-blue text-white hover:bg-opacity-90 transition-colors hover:shadow-md;
+  }
+  
+  /* Add new animation utility classes */
+  .hover-lift {
+    @apply transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg;
+  }
+  
+  .hover-scale {
+    @apply transition-transform duration-300 hover:scale-105;
+  }
+  
+  .hover-glow {
+    @apply transition-shadow duration-300 hover:shadow-[0_0_15px_rgba(249,115,22,0.5)];
+  }
+  
+  .page-transition {
+    @apply animate-fade-in;
+  }
+  
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-md hover:-translate-y-1;
   }
 }
