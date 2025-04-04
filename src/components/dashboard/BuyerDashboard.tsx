@@ -47,7 +47,7 @@ const BuyerDashboard = () => {
       try {
         const { data, error } = await supabase
           .from('products')
-          .select('*, profiles(name)')
+          .select('*, profiles!inner(*)')
           .eq('status', 'active');
           
         if (error) throw error;
