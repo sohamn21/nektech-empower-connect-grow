@@ -1,8 +1,7 @@
-
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session, User } from "@supabase/supabase-js";
-import { UserProfile, UserRole, TableNames, ProfileData } from "@/types";
+import { UserProfile, UserRole, ProfileData } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 
 type AuthContextType = {
@@ -64,10 +63,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const fetchUserProfile = async (userId: string) => {
     try {
       console.log("Fetching profile for user:", userId);
-      // Using as const to specify the exact table name
-      const profilesTable = "profiles" as const;
       const { data: profileData, error: profileError } = await supabase
-        .from(profilesTable)
+        .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
@@ -82,12 +79,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const mainProfile = profileData as ProfileData;
         let roleSpecificData = {};
         
-        // Determine which role-specific table to query based on the user's role
         if (mainProfile.role === 'entrepreneur') {
-          // Using as const to specify the exact table name
-          const entrepreneurTable = "entrepreneur_profiles" as const;
           const { data, error } = await supabase
-            .from(entrepreneurTable)
+            .from('entrepreneur_profiles')
             .select('*')
             .eq('id', userId)
             .single();
@@ -101,10 +95,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             roleSpecificData = data;
           }
         } else if (mainProfile.role === 'hub_manager') {
-          // Using as const to specify the exact table name
-          const hubManagerTable = "hub_manager_profiles" as const;
           const { data, error } = await supabase
-            .from(hubManagerTable)
+            .from('hub_manager_profiles')
             .select('*')
             .eq('id', userId)
             .single();
@@ -118,10 +110,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             roleSpecificData = data;
           }
         } else if (mainProfile.role === 'buyer') {
-          // Using as const to specify the exact table name
-          const buyerTable = "buyer_profiles" as const;
           const { data, error } = await supabase
-            .from(buyerTable)
+            .from('buyer_profiles')
             .select('*')
             .eq('id', userId)
             .single();
@@ -135,10 +125,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             roleSpecificData = data;
           }
         } else if (mainProfile.role === 'csr') {
-          // Using as const to specify the exact table name
-          const csrTable = "csr_profiles" as const;
           const { data, error } = await supabase
-            .from(csrTable)
+            .from('csr_profiles')
             .select('*')
             .eq('id', userId)
             .single();
@@ -152,7 +140,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             roleSpecificData = data;
           }
         }
-        // Note: We're not handling 'admin' role here since there's no admin_profiles table
         
         const transformedProfile: UserProfile = {
           id: mainProfile.id,
@@ -204,10 +191,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       
       if (Object.keys(mainProfileProps).length > 0) {
-        // Using as const to specify the exact table name
-        const profilesTable = "profiles" as const;
         const { error } = await supabase
-          .from(profilesTable)
+          .from('profiles')
           .update(mainProfileProps)
           .eq('id', user.id);
           
@@ -215,10 +200,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       
       if (Object.keys(roleSpecificProps).length > 0 && userProfile?.role) {
-        // Construct table name for the role-specific profile
-        let roleTableName: TableNames | null = null;
+        let roleTableName: string = '';
         
-        // Make sure we only use valid table names that exist in our TableNames type
         switch (userProfile.role) {
           case 'entrepreneur':
             roleTableName = "entrepreneur_profiles";
@@ -232,12 +215,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           case 'csr':
             roleTableName = "csr_profiles";
             break;
-          // We don't have an admin_profiles table, so we skip this case
           default:
-            roleTableName = null;
+            roleTableName = '';
         }
         
-        // Only proceed if we have a valid table name
         if (roleTableName) {
           const { error } = await supabase
             .from(roleTableName)

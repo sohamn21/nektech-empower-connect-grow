@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -14,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Download, Filter } from "lucide-react";
+import { Loader2, Download } from "lucide-react";
 import { UserInteraction } from "@/types";
 
 const DialogflowInteractions = () => {
@@ -80,7 +79,9 @@ const DialogflowInteractions = () => {
         return;
       }
       
-      setInteractions(data as UserInteraction[] || []);
+      // Explicitly cast the data to UserInteraction[] type
+      const typedData = (data || []) as unknown as UserInteraction[];
+      setInteractions(typedData);
       setTotalPages(Math.ceil((count || 0) / itemsPerPage));
     } catch (error) {
       console.error("Error in fetchInteractions:", error);
@@ -119,7 +120,7 @@ const DialogflowInteractions = () => {
       const headers = ['ID', 'Phone Number', 'Intent', 'User Input', 'Language', 'Timestamp'];
       const csvRows = [
         headers.join(','),
-        ...(data as UserInteraction[]).map(item => [
+        ...((data || []) as unknown as UserInteraction[]).map(item => [
           item.id,
           item.phone_number || '',
           item.intent,
