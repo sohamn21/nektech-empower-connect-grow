@@ -1,91 +1,139 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
-import { formatDate } from "@/lib/utils";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { Badge } from "@/components/ui/badge";
-import { Loader2, Download } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { UserInteraction } from "@/types";
+import { formatDistance } from "date-fns";
+
+interface TablePaginationProps {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}
+
+const TablePagination: React.FC<TablePaginationProps> = ({
+  currentPage,
+  totalPages,
+  onPageChange,
+}) => {
+  const pageNumbers = [];
+  for (let i = 1; i <= totalPages; i++) {
+    pageNumbers.push(i);
+  }
+
+  return (
+    <div className="flex items-center justify-center mt-4">
+      <Button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        variant="outline"
+        size="sm"
+      >
+        Previous
+      </Button>
+      {pageNumbers.map((number) => (
+        <Button
+          key={number}
+          onClick={() => onPageChange(number)}
+          variant={currentPage === number ? "default" : "outline"}
+          size="sm"
+        >
+          {number}
+        </Button>
+      ))}
+      <Button
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        variant="outline"
+        size="sm"
+      >
+        Next
+      </Button>
+    </div>
+  );
+};
 
 const DialogflowInteractions = () => {
-  const { t } = useTranslation();
-  const { isAuthenticated, isLoading, userProfile, userRole } = useAuth();
+  const { userRole, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
-  
   const [interactions, setInteractions] = useState<UserInteraction[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [intentFilter, setIntentFilter] = useState<string>("");
-  const [languageFilter, setLanguageFilter] = useState<string>("");
-  const [page, setPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const itemsPerPage = 20;
-  
+  const [itemsPerPage] = useState(10);
+  const [phoneFilter, setPhoneFilter] = useState("");
+  const [intentFilter, setIntentFilter] = useState("");
+
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!isAuthenticated && !isLoading) {
       navigate("/auth");
-      return;
     }
-    
-    // Only admins and CSR role should have access
-    if (!isLoading && isAuthenticated && userRole !== "admin" && userRole !== "csr") {
+  }, [isAuthenticated, isLoading, navigate]);
+
+  useEffect(() => {
+    if (userRole !== "admin" && isAuthenticated) {
       navigate("/dashboard");
-      return;
     }
-    
+  }, [userRole, isAuthenticated, navigate]);
+
+  useEffect(() => {
     fetchInteractions();
-  }, [isAuthenticated, isLoading, userRole, navigate, page, intentFilter, languageFilter, searchTerm]);
-  
+  }, [currentPage, phoneFilter, intentFilter]);
+
   const fetchInteractions = async () => {
     setLoading(true);
     
     try {
-      // Use type assertion to tell TypeScript that we're safely handling this
+      // Use type assertion for the user_interactions table
       let query = supabase
-        .from('user_interactions' as any)
+        .from("user_interactions" as any)
         .select('*', { count: 'exact' });
       
       // Apply filters
+      if (phoneFilter) {
+        query = query.ilike('phone_number', `%${phoneFilter}%`);
+      }
+      
       if (intentFilter) {
-        query = query.eq('intent', intentFilter);
+        query = query.ilike('intent', `%${intentFilter}%`);
       }
       
-      if (languageFilter) {
-        query = query.eq('language', languageFilter);
-      }
-      
-      if (searchTerm) {
-        query = query.or(`phone_number.ilike.%${searchTerm}%,user_input.ilike.%${searchTerm}%`);
-      }
-      
-      // Pagination
-      const from = (page - 1) * itemsPerPage;
+      // Apply pagination
+      const from = (currentPage - 1) * itemsPerPage;
       const to = from + itemsPerPage - 1;
       
-      const { data, count, error } = await query
+      query = query
         .order('timestamp', { ascending: false })
         .range(from, to);
       
+      const { data, error, count } = await query;
+      
       if (error) {
-        console.error("Error fetching interactions:", error);
+        console.error("Error fetching interactions:", error.message);
+        setInteractions([]);
+        setTotalPages(1);
+        setLoading(false);
         return;
       }
       
-      // Use type assertion to ensure the data conforms to UserInteraction[]
+      // Use type assertion to handle the data
       setInteractions(data as unknown as UserInteraction[]);
       setTotalPages(Math.ceil((count || 0) / itemsPerPage));
     } catch (error) {
       console.error("Error in fetchInteractions:", error);
+      setInteractions([]);
+      setTotalPages(1);
     } finally {
       setLoading(false);
     }
@@ -93,31 +141,35 @@ const DialogflowInteractions = () => {
   
   const downloadCSV = async () => {
     try {
+      // Use type assertion for the user_interactions table
       let query = supabase
-        .from('user_interactions' as any)
+        .from("user_interactions" as any)
         .select('*');
       
       // Apply filters
+      if (phoneFilter) {
+        query = query.ilike('phone_number', `%${phoneFilter}%`);
+      }
+      
       if (intentFilter) {
-        query = query.eq('intent', intentFilter);
+        query = query.ilike('intent', `%${intentFilter}%`);
       }
       
-      if (languageFilter) {
-        query = query.eq('language', languageFilter);
-      }
+      query = query.order('timestamp', { ascending: false });
       
-      if (searchTerm) {
-        query = query.or(`phone_number.ilike.%${searchTerm}%,user_input.ilike.%${searchTerm}%`);
-      }
-      
-      const { data, error } = await query.order('timestamp', { ascending: false });
+      const { data, error } = await query;
       
       if (error) {
-        console.error("Error fetching data for download:", error);
+        console.error("Error downloading data:", error.message);
         return;
       }
       
-      // Convert to CSV
+      if (!data || data.length === 0) {
+        console.warn("No data to download");
+        return;
+      }
+      
+      // Create CSV content
       const headers = ['ID', 'Phone Number', 'Intent', 'User Input', 'Language', 'Timestamp'];
       const csvRows = [
         headers.join(','),
@@ -125,205 +177,113 @@ const DialogflowInteractions = () => {
           item.id,
           item.phone_number || '',
           item.intent,
-          `"${(item.user_input || '').replace(/"/g, '""')}"`,
+          item.user_input || '',
           item.language,
           item.timestamp
-        ].join(','))
+        ].map(value => `"${String(value).replace(/"/g, '""')}"`).join(','))
       ];
       
       const csvContent = csvRows.join('\n');
-      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
-      
-      // Create download link
-      const a = document.createElement('a');
-      a.setAttribute('href', url);
-      a.setAttribute('download', `dialogflow-interactions-${new Date().toISOString().split('T')[0]}.csv`);
-      a.click();
-      
-      URL.revokeObjectURL(url);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'user_interactions.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch (error) {
-      console.error("Error in downloadCSV:", error);
+      console.error("Error generating CSV:", error);
     }
   };
-  
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary mr-2" />
-        <p className="text-2xl">{t('dashboard.loading')}</p>
-      </div>
-    );
+
+  if (isLoading || !isAuthenticated || userRole !== "admin") {
+    return <div>Loading...</div>;
   }
-  
+
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      
-      <main className="flex-grow bg-muted/20 py-8">
-        <div className="container mx-auto px-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Dialogflow User Interactions</CardTitle>
-                  <CardDescription>
-                    View and analyze user interactions from Dialogflow IVR system
-                  </CardDescription>
-                </div>
-                <Button variant="outline" onClick={downloadCSV}>
-                  <Download className="h-4 w-4 mr-2" /> Export CSV
-                </Button>
-              </div>
-            </CardHeader>
-            
-            <CardContent>
-              <div className="flex flex-col md:flex-row gap-4 mb-6">
-                <div className="flex-1">
-                  <Input
-                    placeholder="Search by phone number or input..."
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                  />
-                </div>
-                
-                <div className="flex gap-2">
-                  <Select
-                    value={intentFilter}
-                    onValueChange={setIntentFilter}
-                  >
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Filter by intent" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">All intents</SelectItem>
-                      <SelectItem value="Welcome">Welcome</SelectItem>
-                      <SelectItem value="Options">Options</SelectItem>
-                      <SelectItem value="ProductInfo">Product Info</SelectItem>
-                      <SelectItem value="Training">Training</SelectItem>
-                      <SelectItem value="Marketplace">Marketplace</SelectItem>
-                      <SelectItem value="Goodbye">Goodbye</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  
-                  <Select
-                    value={languageFilter}
-                    onValueChange={setLanguageFilter}
-                  >
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Filter by language" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">All languages</SelectItem>
-                      <SelectItem value="en">English</SelectItem>
-                      <SelectItem value="hi">Hindi</SelectItem>
-                      <SelectItem value="mr">Marathi</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              {loading ? (
-                <div className="flex justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
-              ) : interactions.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  No interactions found
-                </div>
-              ) : (
-                <>
-                  <div className="rounded-md border">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Time</TableHead>
-                          <TableHead>Phone Number</TableHead>
-                          <TableHead>Intent</TableHead>
-                          <TableHead>User Input</TableHead>
-                          <TableHead>Language</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {interactions.map(interaction => (
-                          <TableRow key={interaction.id}>
-                            <TableCell className="whitespace-nowrap">
-                              {formatDate(interaction.timestamp)}
-                            </TableCell>
-                            <TableCell>
-                              {interaction.phone_number || 'N/A'}
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="outline">
-                                {interaction.intent}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="max-w-xs truncate">
-                              {interaction.user_input || 'N/A'}
-                            </TableCell>
-                            <TableCell>
-                              {interaction.language === 'en' ? 'English' : 
-                               interaction.language === 'hi' ? 'Hindi' : 
-                               interaction.language === 'mr' ? 'Marathi' : 
-                               interaction.language}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                  
-                  <div className="mt-4">
-                    <Pagination>
-                      <PaginationContent>
-                        <PaginationItem>
-                          <PaginationPrevious 
-                            onClick={() => setPage(p => Math.max(1, p - 1))}
-                            className={page <= 1 ? "pointer-events-none opacity-50" : ""}
-                          />
-                        </PaginationItem>
-                        
-                        {[...Array(Math.min(5, totalPages))].map((_, i) => {
-                          let pageNumber;
-                          if (totalPages <= 5) {
-                            pageNumber = i + 1;
-                          } else if (page <= 3) {
-                            pageNumber = i + 1;
-                          } else if (page >= totalPages - 2) {
-                            pageNumber = totalPages - 4 + i;
-                          } else {
-                            pageNumber = page - 2 + i;
+    <div className="container mx-auto py-8">
+      <Card>
+        <CardHeader>
+          <CardTitle>Dialogflow Interactions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
+            <div>
+              <Input
+                type="text"
+                placeholder="Filter by Phone Number"
+                value={phoneFilter}
+                onChange={(e) => {
+                  setPhoneFilter(e.target.value);
+                  setCurrentPage(1);
+                }}
+              />
+            </div>
+            <div>
+              <Input
+                type="text"
+                placeholder="Filter by Intent"
+                value={intentFilter}
+                onChange={(e) => {
+                  setIntentFilter(e.target.value);
+                  setCurrentPage(1);
+                }}
+              />
+            </div>
+            <div>
+              <Button onClick={downloadCSV}>Download CSV</Button>
+            </div>
+          </div>
+
+          {loading ? (
+            <div>Loading interactions...</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Phone Number</TableHead>
+                    <TableHead>Intent</TableHead>
+                    <TableHead>User Input</TableHead>
+                    <TableHead>Language</TableHead>
+                    <TableHead>Timestamp</TableHead>
+                    <TableHead>Time Ago</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {interactions.map((interaction) => (
+                    <TableRow key={interaction.id}>
+                      <TableCell>{interaction.id}</TableCell>
+                      <TableCell>{interaction.phone_number}</TableCell>
+                      <TableCell>{interaction.intent}</TableCell>
+                      <TableCell>{interaction.user_input}</TableCell>
+                      <TableCell>{interaction.language}</TableCell>
+                      <TableCell>{interaction.timestamp}</TableCell>
+                      <TableCell>
+                        {formatDistance(
+                          new Date(interaction.timestamp),
+                          new Date(),
+                          {
+                            addSuffix: true,
                           }
-                          
-                          return (
-                            <PaginationItem key={i}>
-                              <PaginationLink
-                                onClick={() => setPage(pageNumber)}
-                                isActive={page === pageNumber}
-                              >
-                                {pageNumber}
-                              </PaginationLink>
-                            </PaginationItem>
-                          );
-                        })}
-                        
-                        <PaginationItem>
-                          <PaginationNext 
-                            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                            className={page >= totalPages ? "pointer-events-none opacity-50" : ""}
-                          />
-                        </PaginationItem>
-                      </PaginationContent>
-                    </Pagination>
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </main>
-      
-      <Footer />
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+
+          <TablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={(page) => setCurrentPage(page)}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session, User } from "@supabase/supabase-js";
@@ -64,9 +63,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const fetchUserProfile = async (userId: string) => {
     try {
       console.log("Fetching profile for user:", userId);
-      // Use "profiles" directly as a string literal, not from TableNames
       const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
+        .from("profiles" as const)
         .select('*')
         .eq('id', userId)
         .single();
@@ -83,7 +81,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         if (mainProfile.role === 'entrepreneur') {
           const { data, error } = await supabase
-            .from('entrepreneur_profiles')
+            .from("entrepreneur_profiles" as const)
             .select('*')
             .eq('id', userId)
             .single();
@@ -98,7 +96,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
         } else if (mainProfile.role === 'hub_manager') {
           const { data, error } = await supabase
-            .from('hub_manager_profiles')
+            .from("hub_manager_profiles" as const)
             .select('*')
             .eq('id', userId)
             .single();
@@ -113,7 +111,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
         } else if (mainProfile.role === 'buyer') {
           const { data, error } = await supabase
-            .from('buyer_profiles')
+            .from("buyer_profiles" as const)
             .select('*')
             .eq('id', userId)
             .single();
@@ -128,7 +126,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
         } else if (mainProfile.role === 'csr') {
           const { data, error } = await supabase
-            .from('csr_profiles')
+            .from("csr_profiles" as const)
             .select('*')
             .eq('id', userId)
             .single();
@@ -194,7 +192,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (Object.keys(mainProfileProps).length > 0) {
         const { error } = await supabase
-          .from('profiles')
+          .from("profiles" as const)
           .update(mainProfileProps)
           .eq('id', user.id);
           
@@ -223,7 +221,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         if (roleTableName) {
           const { error } = await supabase
-            .from(roleTableName)
+            .from(roleTableName as any)
             .update(roleSpecificProps)
             .eq('id', user.id);
             
