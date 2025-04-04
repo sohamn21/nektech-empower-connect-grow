@@ -516,7 +516,7 @@ const EntrepreneurDashboard = () => {
                         <h4 className="text-sm font-medium text-muted-foreground mb-1">
                           {t('dashboard.entrepreneur.profile.aadhar')}
                         </h4>
-                        <p className="font-medium">{'aadharNumber' in (userProfile as any) ? 
+                        <p className="font-medium">{(userProfile as any).aadharNumber ? 
                           (userProfile as any).aadharNumber.replace(/(\d{4})(\d{4})(\d{4})/, '$1-$2-$3') : 
                           "-"}</p>
                       </div>
@@ -525,16 +525,14 @@ const EntrepreneurDashboard = () => {
                         <h4 className="text-sm font-medium text-muted-foreground mb-1">
                           {t('dashboard.entrepreneur.profile.occupation')}
                         </h4>
-                        <p className="font-medium">{'occupation' in (userProfile as any) ? 
-                          (userProfile as any).occupation : 
-                          "-"}</p>
+                        <p className="font-medium">{(userProfile as any).occupation || "-"}</p>
                       </div>
                       
                       <div>
                         <h4 className="text-sm font-medium text-muted-foreground mb-1">
                           {t('dashboard.entrepreneur.profile.income')}
                         </h4>
-                        <p className="font-medium">{'familyIncome' in (userProfile as any) ? 
+                        <p className="font-medium">{(userProfile as any).familyIncome ? 
                           `₹${(userProfile as any).familyIncome.toLocaleString()}` : 
                           "-"}</p>
                       </div>
@@ -543,9 +541,8 @@ const EntrepreneurDashboard = () => {
                         <h4 className="text-sm font-medium text-muted-foreground mb-1">
                           {t('dashboard.entrepreneur.profile.hubManagerPermission')}
                         </h4>
-                        <p className="font-medium">{'hubManagerPermission' in (userProfile as any) ? 
-                          ((userProfile as any).hubManagerPermission ? 'Granted' : 'Not Granted') : 
-                          "Not Granted"}</p>
+                        <p className="font-medium">{(userProfile as any).hubManagerPermission ? 
+                          'Granted' : 'Not Granted'}</p>
                       </div>
                     </>
                   )}

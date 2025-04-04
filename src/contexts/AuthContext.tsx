@@ -1,7 +1,8 @@
+
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session, User } from "@supabase/supabase-js";
-import { UserProfile, UserRole, TableNames } from "@/types";
+import { UserProfile, UserRole, TableNames, ProfileData } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 
 type AuthContextType = {
@@ -70,9 +71,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (profileError) throw profileError;
       
       if (profileData) {
+        const mainProfile = profileData as ProfileData;
         let roleSpecificData = {};
         
-        if (profileData.role === 'entrepreneur') {
+        if (mainProfile.role === 'entrepreneur') {
           const { data, error } = await supabase
             .from('entrepreneur_profiles' as TableNames)
             .select('*')
@@ -82,7 +84,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           if (!error && data) {
             roleSpecificData = data;
           }
-        } else if (profileData.role === 'hub_manager') {
+        } else if (mainProfile.role === 'hub_manager') {
           const { data, error } = await supabase
             .from('hub_manager_profiles' as TableNames)
             .select('*')
@@ -92,7 +94,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           if (!error && data) {
             roleSpecificData = data;
           }
-        } else if (profileData.role === 'buyer') {
+        } else if (mainProfile.role === 'buyer') {
           const { data, error } = await supabase
             .from('buyer_profiles' as TableNames)
             .select('*')
@@ -102,7 +104,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           if (!error && data) {
             roleSpecificData = data;
           }
-        } else if (profileData.role === 'csr') {
+        } else if (mainProfile.role === 'csr') {
           const { data, error } = await supabase
             .from('csr_profiles' as TableNames)
             .select('*')
@@ -115,12 +117,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
         
         const transformedProfile: UserProfile = {
-          id: profileData.id,
-          email: profileData.email,
-          role: profileData.role as UserRole,
-          name: profileData.name,
-          preferredLanguage: profileData.preferred_language || 'en',
-          createdAt: profileData.created_at,
+          id: mainProfile.id,
+          email: mainProfile.email,
+          role: mainProfile.role as UserRole,
+          name: mainProfile.name,
+          preferredLanguage: mainProfile.preferred_language || 'en',
+          createdAt: mainProfile.created_at,
         };
 
         const camelCasedRoleData: Record<string, any> = {};

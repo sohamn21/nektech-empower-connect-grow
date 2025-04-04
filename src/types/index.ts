@@ -89,7 +89,18 @@ export interface DatabaseScheme {
   created_at: string;
 }
 
-// Define Supabase table names as string literals for type safety
+// Database specific types 
+export interface ProfileData {
+  id: string;
+  email: string;
+  role: string;
+  name: string;
+  preferred_language: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// Define Supabase table names as literal string type for type safety
 export type TableNames = 
   | "profiles"
   | "buyer_profiles" 

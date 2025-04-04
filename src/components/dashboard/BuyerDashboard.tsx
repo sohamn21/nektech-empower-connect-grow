@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,10 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Product, TableNames } from "@/types";
-import { ShoppingBag, FileText } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { formatCurrency } from "@/lib/utils";
 
 const BuyerDashboard = () => {
@@ -26,7 +24,7 @@ const BuyerDashboard = () => {
           .from('products' as TableNames)
           .select(`
             *,
-            profiles(name)
+            profiles:owner_id(name)
           `)
           .eq('status', 'active');
           
@@ -148,18 +146,14 @@ const BuyerDashboard = () => {
                         <h4 className="text-sm font-medium text-muted-foreground mb-1">
                           {t('dashboard.buyer.profile.companyName')}
                         </h4>
-                        <p className="font-medium">{'companyName' in (userProfile as any) ? 
-                          (userProfile as any).companyName : 
-                          "-"}</p>
+                        <p className="font-medium">{(userProfile as any).companyName || "-"}</p>
                       </div>
                       
                       <div>
                         <h4 className="text-sm font-medium text-muted-foreground mb-1">
                           {t('dashboard.buyer.profile.businessType')}
                         </h4>
-                        <p className="font-medium">{'businessType' in (userProfile as any) ? 
-                          (userProfile as any).businessType : 
-                          "-"}</p>
+                        <p className="font-medium">{(userProfile as any).businessType || "-"}</p>
                       </div>
                     </>
                   )}
