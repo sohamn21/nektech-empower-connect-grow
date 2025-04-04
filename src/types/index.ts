@@ -1,6 +1,8 @@
 
 export type UserRole = 'entrepreneur' | 'hub_manager' | 'buyer' | 'csr' | 'admin';
 
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+
 export interface UserProfile {
   id: string;
   email: string;
@@ -17,7 +19,7 @@ export interface EntrepreneurProfile extends UserProfile {
   aadharNumber: string;
   occupation: string;
   familyIncome: number;
-  products: Product[];
+  products?: Product[];
   hubManagerPermission: boolean;
   assistingHubManagerId?: string;
 }
@@ -55,6 +57,7 @@ export interface Product {
   created_at: string;
   updated_at: string;
   status: 'active' | 'draft' | 'sold';
+  owner?: { name: string };
 }
 
 export interface GovScheme {
@@ -71,5 +74,17 @@ export interface GovScheme {
     maxAge?: number;
   };
   benefits: string[];
-  applicationUrl: string;
+  application_url: string;
+  created_at: string;
+}
+
+// Helper types for database schema matching
+export interface DatabaseScheme {
+  id: string;
+  title: string;
+  description: string;
+  eligibility_criteria: Json;
+  benefits: string[];
+  application_url: string;
+  created_at: string;
 }

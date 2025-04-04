@@ -118,11 +118,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
         }
         
-        // Combine base profile with role-specific data
+        // Transform snake_case DB fields to camelCase for the frontend
+        const transformedProfile: UserProfile = {
+          id: profileData.id,
+          email: profileData.email,
+          role: profileData.role as UserRole,
+          name: profileData.name,
+          preferredLanguage: profileData.preferred_language || 'en',
+          createdAt: profileData.created_at,
+          // Add any other base profile fields as needed
+        };
+
+        // Combine with role-specific data, camelCasing the keys
+        const camelCasedRoleData: Record<string, any> = {};
+        Object.entries(roleSpecificData).forEach(([key, value]) => {
+          // Convert snake_case to camelCase
+          const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+          camelCasedRoleData[camelKey] = value;
+        });
+        
+        // Set the combined profile
         setUserProfile({
-          ...profileData,
-          ...roleSpecificData,
-          preferredLanguage: profileData.preferred_language
+          ...transformedProfile,
+          ...camelCasedRoleData
         } as UserProfile);
       }
     } catch (error: any) {
@@ -136,8 +154,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     
     try {
       // Determine which properties belong to main profile and which to role-specific profile
-      const mainProfileProps: any = {};
-      const roleSpecificProps: any = {};
+      const mainProfileProps: Record<string, any> = {};
+      const roleSpecificProps: Record<string, any> = {};
       
       Object.entries(profile).forEach(([key, value]) => {
         // Mapping profile keys to database column names
@@ -148,7 +166,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             mainProfileProps[key] = value;
           }
         } else {
-          roleSpecificProps[key] = value;
+          // Convert camelCase to snake_case for DB
+          const snakeKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+          roleSpecificProps[snakeKey] = value;
         }
       });
       

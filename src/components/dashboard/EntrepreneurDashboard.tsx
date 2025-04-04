@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { GovScheme, Product } from "@/types";
+import { GovScheme, Product, DatabaseScheme, Json } from "@/types";
 import { Play, Upload, ShoppingBag, School, FileText, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -82,15 +82,40 @@ const EntrepreneurDashboard = () => {
       if (!userProfile) return;
       
       try {
-        const { data, error } = await supabase
+        const { data: rawData, error } = await supabase
           .from('schemes')
           .select('*');
           
         if (error) throw error;
         
+        // Convert database schemes to our application GovScheme format
+        const dbSchemes = rawData as DatabaseScheme[];
+        const schemes: GovScheme[] = dbSchemes.map(scheme => {
+          // Parse eligibility_criteria JSON
+          const criteria = scheme.eligibility_criteria as Record<string, any>;
+          
+          return {
+            id: scheme.id,
+            title: scheme.title,
+            description: scheme.description,
+            eligibility_criteria: {
+              minIncome: criteria?.minIncome,
+              maxIncome: criteria?.maxIncome,
+              eligibleOccupations: criteria?.eligibleOccupations,
+              eligibleLocations: criteria?.eligibleLocations,
+              eligibleCategories: criteria?.eligibleCategories,
+              minAge: criteria?.minAge,
+              maxAge: criteria?.maxAge,
+            },
+            benefits: scheme.benefits,
+            application_url: scheme.application_url,
+            created_at: scheme.created_at
+          };
+        });
+        
         // Filter schemes based on user profile criteria
-        if (data && userProfile.role === 'entrepreneur') {
-          const filteredSchemes = data.filter(scheme => {
+        if (schemes && userProfile.role === 'entrepreneur') {
+          const filteredSchemes = schemes.filter(scheme => {
             const criteria = scheme.eligibility_criteria;
             if (!criteria) return true;
             
@@ -108,7 +133,7 @@ const EntrepreneurDashboard = () => {
             return true;
           });
           
-          setEligibleSchemes(filteredSchemes as GovScheme[]);
+          setEligibleSchemes(filteredSchemes);
         }
       } catch (error: any) {
         console.error('Error fetching schemes:', error.message);
