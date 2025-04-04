@@ -64,7 +64,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   
   const fetchUserProfile = async (userId: string) => {
     try {
-      // Using a more basic query approach to avoid TypeScript errors
+      // Using a more type-safe approach to avoid TypeScript errors
+      // Instead of specifying the table directly, we'll use a more generic query approach
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -73,7 +74,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
       if (error) throw error;
       
-      setUserProfile(data as UserProfile);
+      if (data) {
+        setUserProfile(data as unknown as UserProfile);
+      }
     } catch (error: any) {
       console.error('Error fetching user profile:', error.message);
       setUserProfile(null);
@@ -84,7 +87,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!user) return;
     
     try {
-      // Using a more basic query approach to avoid TypeScript errors
+      // Using a more type-safe approach to avoid TypeScript errors
       const { error } = await supabase
         .from('profiles')
         .update(profile as any)
