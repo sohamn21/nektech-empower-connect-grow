@@ -1,3 +1,4 @@
+
 export type UserRole = 'entrepreneur' | 'hub_manager' | 'buyer' | 'csr' | 'admin';
 
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
@@ -77,6 +78,17 @@ export interface GovScheme {
   created_at: string;
 }
 
+// UserInteraction interface for DialogFlow tracking
+export interface UserInteraction {
+  id: string;
+  phone_number: string;
+  intent: string;
+  user_input: string;
+  language: string;
+  timestamp: string;
+  additional_data?: Json;
+}
+
 // Helper types for database schema matching
 export interface DatabaseScheme {
   id: string;
@@ -107,7 +119,8 @@ export type TableNames =
   | "entrepreneur_profiles"
   | "hub_manager_profiles"
   | "products"
-  | "schemes";
+  | "schemes"
+  | "user_interactions";
 
 // Helper type to avoid recursive type instantiation in Supabase queries
 export type SupabaseQueryParams = { table: TableNames };
