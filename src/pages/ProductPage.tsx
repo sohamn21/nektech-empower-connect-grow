@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, MapPin, Share2, ShoppingBag, Camera, Star, AlertCircle, ChevronRight } from 'lucide-react';
+import { ArrowLeft, MapPin, Share2, ShoppingBag, Camera, Star, AlertCircle, ChevronRight, Bitcoin } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { Product } from "@/types";
+import CryptoPaymentModal from "@/components/CryptoPaymentModal";
 
 // Sample product data (would normally come from an API)
 const sampleProducts: Product[] = [
@@ -99,6 +100,7 @@ const ProductPage = () => {
   const [loading, setLoading] = useState(true);
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
 
   useEffect(() => {
     // Simulate fetching product data
@@ -123,20 +125,17 @@ const ProductPage = () => {
       return;
     }
 
-    // In a real app, this would initiate the checkout process
+    // Open payment modal
+    setPaymentModalOpen(true);
+  };
+
+  const handlePaymentSuccess = () => {
+    // Handle successful payment
     toast({
-      title: "Purchase initiated",
-      description: `${quantity} x ${product?.name} added to cart`,
+      title: "Purchase successful",
+      description: "Thank you for your purchase!",
+      variant: "default",
     });
-    
-    // For demonstration, show a success message and simulate a redirect
-    setTimeout(() => {
-      toast({
-        title: "Purchase successful",
-        description: "Thank you for your purchase!",
-        variant: "default",
-      });
-    }, 2000);
   };
 
   if (loading) {
@@ -316,9 +315,10 @@ const ProductPage = () => {
                     variant="outline" 
                     className="w-full flex-1" 
                     size="lg"
+                    onClick={handleBuy}
                   >
-                    <Camera className="mr-2 h-5 w-5" />
-                    View in 3D
+                    <Bitcoin className="mr-2 h-5 w-5" />
+                    Pay with Crypto
                   </Button>
                 </div>
               </div>
@@ -471,6 +471,18 @@ const ProductPage = () => {
       </main>
       
       <Footer />
+
+      {/* Crypto Payment Modal */}
+      {product && (
+        <CryptoPaymentModal
+          open={paymentModalOpen}
+          onOpenChange={setPaymentModalOpen}
+          productName={product.name}
+          productId={product.id}
+          amount={product.price * quantity}
+          onSuccess={handlePaymentSuccess}
+        />
+      )}
     </div>
   );
 };
