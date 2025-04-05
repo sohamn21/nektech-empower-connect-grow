@@ -7,12 +7,18 @@ import BlockchainFeature from "@/components/BlockchainFeature";
 import AITrainingFeature from "@/components/AITrainingFeature";
 import MarketplaceFeature from "@/components/MarketplaceFeature";
 import Footer from "@/components/Footer";
+import { useEffect } from "react";
 
 const Index = () => {
+  // Add smooth scrolling behavior
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <Navbar />
-      <main>
+      <main className="overflow-hidden">
         <Hero />
         <Features />
         <MissedCallFeature />
