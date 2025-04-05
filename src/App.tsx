@@ -12,6 +12,7 @@ import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DialogflowInteractions from "./pages/admin/DialogflowInteractions";
 import ProductDetails from "./pages/ProductDetails";
+import ProductPage from "./pages/ProductPage";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/product-details" element={<ProductDetails />} />
+            <Route path="/product/:productId" element={<ProductPage />} />
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />

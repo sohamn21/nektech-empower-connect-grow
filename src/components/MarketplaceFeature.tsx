@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import HubsMap from './HubsMap';
 
 const MarketplaceFeature = () => {
@@ -42,7 +43,7 @@ const MarketplaceFeature = () => {
           <TabsContent value="products" className="mt-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {[1, 2, 3, 4, 5, 6, 7, 8].map((item) => (
-                <Card key={item} className="overflow-hidden">
+                <Card key={item} className="overflow-hidden group hover:shadow-md transition-shadow">
                   <div className="aspect-square bg-muted relative">
                     <div className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-sm">
                       <Share2 size={16} className="text-nektech-orange" />
@@ -50,7 +51,7 @@ const MarketplaceFeature = () => {
                     <img 
                       src={productImages[item % productImages.length]} 
                       alt={`Handcrafted Item ${item}`} 
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
                   <CardHeader className="p-4">
@@ -64,16 +65,20 @@ const MarketplaceFeature = () => {
                         <span>Rajasthan</span>
                       </div>
                     </div>
-                    <Button className="w-full mt-4 btn-primary" size="sm">
-                      {t('marketplace.product.viewDetails')}
-                    </Button>
+                    <Link to={`/product/${item}`}>
+                      <Button className="w-full mt-4 btn-primary" size="sm">
+                        {t('marketplace.product.viewDetails')}
+                      </Button>
+                    </Link>
                   </CardContent>
                 </Card>
               ))}
             </div>
             
             <div className="text-center mt-8">
-              <Button variant="outline">{t('marketplace.product.browseAll')}</Button>
+              <Link to="/product-details">
+                <Button variant="outline">{t('marketplace.product.browseAll')}</Button>
+              </Link>
             </div>
           </TabsContent>
           
